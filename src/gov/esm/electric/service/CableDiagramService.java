@@ -43,14 +43,14 @@ public class CableDiagramService {
 				entity.getCreateTime(), entity.getOperater(), entity.getId());
 	}
 
-	private static final String sql_getCableDiagram = "select id,hmtl,createTime,operater from  cable_diagram where id=?";
+	private static final String sql_getCableDiagram = "select id,html,createTime,operater from  cable_diagram where id=?";
 
 	public CableDiagram getCableDiagram(int id) {
 		return this.jdbcTemplate.queryForObject(sql_getCableDiagram, rowMapper,
 				id);
 	}
 
-	private static final String sql_getRecentCableDiagram = "select id,hmtl,createTime,operater from  cable_diagram order by id desc limit 0,1";
+	private static final String sql_getRecentCableDiagram = "select id,html,createTime,operater from  cable_diagram order by id desc limit 0,1";
 
 	/**
 	 * 得到最新的电路图实体
