@@ -72,6 +72,10 @@ public class CableSwitchDao {
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public CableSwitch getCableSwitch(String id) {
+		List<CableSwitch> list=jdbcTemplate.query(sql_getCableSwitch, rowMapper, id);
+		if(list.size()==0){
+			System.out.println("出错:"+id);
+		}
 		return this.jdbcTemplate.queryForObject(sql_getCableSwitch, rowMapper, id);
 	}
 
