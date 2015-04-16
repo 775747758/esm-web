@@ -5,6 +5,7 @@ import gov.esm.electric.domain.CableLine;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -72,5 +73,20 @@ public class CableLineDao {
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public int updateCableLineStatus(String lineId, int status) {
 		return this.jdbcTemplate.update(sql_updateCableLineStatus, status, lineId);
+	}
+	
+	
+	private static  String sql_getLinesByKeyword = "select distinct name from cable_line where name like";
+	/**
+	 * 得到所有以keyword开头的线路
+	 * 
+	 * @return
+	 */
+	public List<Map<String, Object>> getLinesByKeyword(String keyword) {
+		//return this.jdbcTemplate.query(sql_getAllSwitch, rowMapper);
+		StringBuilder temp=new StringBuilder(sql_getLinesByKeyword);
+		temp.append(" ").append("'"+keyword+"%'");
+		System.out.println(temp.toString());
+		return jdbcTemplate.queryForList(temp.toString());
 	}
 }
