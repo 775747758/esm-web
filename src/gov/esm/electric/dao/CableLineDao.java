@@ -29,11 +29,11 @@ public class CableLineDao {
 
 	private static final RowMapper<CableLine> rowMapper = new BeanPropertyRowMapper<CableLine>(CableLine.class);
 
-	private static final String sql_insert = "inert into cable_line(code,name,parentId,status)values(?,?,?,?)";
+	private static final String sql_insert = "insert into cable_line(id,code,name,parentId,status)values(?,?,?,?,?)";
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public void insert(CableLine entity) {
-		PreparedStatementCreator creator = SpringJdbcAssistor.getPreparedStatementCreator(sql_insert, entity.getCode(),
+		PreparedStatementCreator creator = SpringJdbcAssistor.getPreparedStatementCreator(sql_insert, entity.getId(),entity.getCode(),
 				entity.getName(), entity.getParentId(), entity.getStatus());
 		KeyHolder holder = SpringJdbcAssistor.getGeneratedKeyHolder();
 		this.jdbcTemplate.update(creator, holder);
