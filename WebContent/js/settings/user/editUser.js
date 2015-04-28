@@ -75,10 +75,7 @@ esm.settings.editUser.toolbar = [ {
 									//2 清空idField   
 									$('#userList').datagrid('unselectAll');
 									//3 给提示信息 
-									$.messager.show({
-										title:'提示信息!' , 
-										msg:'操作成功!'
-									});
+									$.messager.alert('提示信息!' ,'操作成功!');
 								
 								}
 							} ,"JSON");

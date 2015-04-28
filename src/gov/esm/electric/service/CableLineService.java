@@ -1,5 +1,6 @@
 package gov.esm.electric.service;
 
+import gov.esm.assistor.DataSource;
 import gov.esm.electric.dao.CableLineDao;
 import gov.esm.electric.domain.CableLine;
 
@@ -7,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -77,5 +79,31 @@ public class CableLineService {
 	@Transactional
 	public int updateCableLineStatus(String lineId, int status) {
 		return this.cableLineDao.updateCableLineStatus(lineId, status);
+	}
+	
+	public List<Map<String, Object>> getLinesByKeyword(String keyword) {
+		return cableLineDao.getLinesByKeyword(keyword);
+	}
+
+	/**
+	 * 根据id,编码,父级id,名称添加一条线路
+	 * @param lineId
+	 * @param code
+	 * @param parentLineId
+	 * @param lineName
+	 */
+	public void saveWithIdCodeParentIdName(String lineId, String code, String parentLineId, String lineName) {
+		CableLine line = new CableLine();
+		line.setId(lineId);
+		line.setCode(code);
+		line.setParentId(parentLineId);
+		line.setName(lineName);
+		line.setStatus(DataSource.STATUS_LINE_CLOSE);
+		cableLineDao.insert(line);
+	}
+
+	public void deleteWithId(String lineId) {
+		cableLineDao.deleteWithId(lineId);
+		
 	}
 }

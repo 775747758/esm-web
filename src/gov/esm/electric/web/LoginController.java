@@ -154,10 +154,9 @@ public class LoginController {
 		return permissions;
 	}
 
-	@RequestMapping(value = "/changePassword.do", method = RequestMethod.POST)
+	@RequestMapping(value = "/updatePassword.do", method = RequestMethod.POST)
 	@ResponseBody
-	public Object changePassword(HttpServletRequest req,
-			HttpServletResponse resp, String oldPassword, String newPassword) {
+	public Object updatePassword(HttpServletRequest req, HttpServletResponse resp, String oldPassword, String newPassword) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		HttpSession session = req.getSession();
 		User user = (User) session.getAttribute(Constant.SESSION_KEY_USER);

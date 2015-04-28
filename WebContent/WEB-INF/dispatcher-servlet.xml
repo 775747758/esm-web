@@ -23,9 +23,9 @@
 	</bean>
 	<!-- 视图解析 结束 -->
 
-	<!-- 开关缓存 开始 -->
+	<!-- 开关缓存 开始
 	<bean id="switchCache" class="gov.esm.electric.cache.SwitchCache"
 		init-method="init" />
-	<!-- 开关缓存 结束 -->
+	开关缓存 结束 -->
 	<import resource="classpath*:spring-*.xml" />
 </beans>

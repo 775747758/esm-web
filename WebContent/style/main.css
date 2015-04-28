@@ -1,4 +1,4 @@
-ï»¿/* CSS reset */
+/* CSS reset */
 body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,p,blockquote,th,td{ margin: 0; padding: 0; }
 fieldset,img{ border: 0; }
 :focus{ outline: 0; }
@@ -80,7 +80,7 @@ h5 { font-size: 14px; line-height: 28px; }
 
 /*header*/
 #header { 
-    font-family:'å¾®è½¯é›…é»‘';
+    font-family:'Î¢ÈíÑÅºÚ';
     background:#2a2c2e;
     height:60px}
 
@@ -143,7 +143,7 @@ h5 { font-size: 14px; line-height: 28px; }
      position:relative;
     }
     .login-btn {
-        font-family:'å¾®è½¯é›…é»‘';  
+        font-family:'Î¢ÈíÑÅºÚ';  
         width:100px;
         height:40px;
         background:#c9394a;
@@ -159,7 +159,7 @@ h5 { font-size: 14px; line-height: 28px; }
 .login-btn:hover { 
     opacity:1;}
 
-/*è®¾ç½®ä¸­å¿ƒ*/
+/*ÉèÖÃÖĞĞÄ*/
 
 
 #set_btn{
@@ -306,7 +306,7 @@ h5 { font-size: 14px; line-height: 28px; }
 
 
 
-/*ç¿»é¡µ2013-8-15*/ 
+/*·­Ò³2013-8-15*/ 
 .page {
     margin: 25px 0 auto;
     overflow: hidden;
@@ -318,7 +318,7 @@ h5 { font-size: 14px; line-height: 28px; }
     border: 1px solid #c1c1c1;
     margin-right: 10px;
     font-size: 14px;
-    font-family: "å¾®è½¯é›…é»‘";
+    font-family: "Î¢ÈíÑÅºÚ";
     color: #b1b1b1;
     text-align: center;
     padding: 5px 15px;
@@ -329,7 +329,7 @@ h5 { font-size: 14px; line-height: 28px; }
     border: 1px solid #c1c1c1;
     margin-right: 10px;
     font-size: 14px;
-    font-family: "å¾®è½¯é›…é»‘";
+    font-family: "Î¢ÈíÑÅºÚ";
     text-align: center;
     padding: 5px 15px;
 }
@@ -347,7 +347,7 @@ h5 { font-size: 14px; line-height: 28px; }
 .page .active:hover{
     color:#fff;
 }
-/*æŒ‰é’®å®šä¹‰å¼€å§‹*/
+/*°´Å¥¶¨Òå¿ªÊ¼*/
 .btn,a.btn {
     cursor:pointer;
     border: none;
@@ -360,7 +360,7 @@ h5 { font-size: 14px; line-height: 28px; }
     -moz-transition: 0.25s;
     -o-transition: 0.25s;
     transition: 0.25s;
-    font-family:'å¾®è½¯é›…é»‘';
+    font-family:'Î¢ÈíÑÅºÚ';
     margin:0;
     height:26px;
     overflow:visible;
@@ -485,7 +485,7 @@ a.btn-hascourse:hover{background:#f05e6f;border:1px solid #f05e6f;}
     line-height:42px;
     font-size:18px;
 }
-/*æŒ‰é’®å®šä¹‰ç»“æŸ*/
+/*°´Å¥¶¨Òå½áÊø*/
 
 select{
     margin:0;
@@ -507,7 +507,7 @@ select:focus{
     outline:5px auto -webkit-focus-ring-color;
     outline-offset:-2px;
 }
-/*è¿›åº¦æ¡*/
+/*½ø¶ÈÌõ*/
 
 progress{ 
     display:inline-block;
@@ -531,7 +531,7 @@ progress::-webkit-progress-value  { background: #c9394a; }
     height:10px;
 }
 .teacher-icon { width: 7px; margin-left:5px; position: relative; top:1px; }	
-/*å›åˆ°é¡¶éƒ¨*/
+/*»Øµ½¶¥²¿*/
 .gotoTopBtn{display:block; position:fixed;width:40px;height:90px;bottom:151px; left: 50%; margin-left: 510px;}
 .goto_top:hover{ cursor:pointer;width:40px;height:40px; background:url(../img/gotoTop.png) no-repeat 0 -90px; display: inline-block;}
 .goto_top{ cursor:pointer;width:40px;height:40px; background:url(../img/gotoTop.png) no-repeat 0 0; display: inline-block;}
@@ -557,8 +557,8 @@ progress::-webkit-progress-value  { background: #c9394a; }
 * html .gotoTopBtn {position:absolute;bottom:auto;top:expression(eval(document.documentElement.scrollTop+document.documentElement.clientHeight-this.offsetHeight-(parseInt(this.currentStyle.marginTop,10)||0)-(parseInt(this.currentStyle.marginBottom,10)||0)));}
 
 /* html,* html body /* 
-ä¿®æ­£IE6æŒ¯åŠ¨bug */{background-image:url(about:blank);    /*ç”¨æµè§ˆå™¨ç©ºç™½é¡µé¢ä½œä¸ºèƒŒæ™¯*/ background-attachment:fixed; /* prevent screen flash in IE6 ç¡®ä¿æ»šåŠ¨æ¡æ»šåŠ¨æ—¶ï¼Œå…ƒç´ ä¸é—ªåŠ¨*/}
-/* end å›åˆ°é¡¶éƒ¨*/
+ĞŞÕıIE6Õñ¶¯bug */{background-image:url(about:blank);    /*ÓÃä¯ÀÀÆ÷¿Õ°×Ò³Ãæ×÷Îª±³¾°*/ background-attachment:fixed; /* prevent screen flash in IE6 È·±£¹ö¶¯Ìõ¹ö¶¯Ê±£¬ÔªËØ²»ÉÁ¶¯*/}
+/* end »Øµ½¶¥²¿*/
 
 
 a {outline: none;}
@@ -569,7 +569,7 @@ input::-moz-focus-inner{border:0px;}
 
   body { 
   background:#f5f5f5;
-  font-family:"å¾®è½¯é›…é»‘";}
+  font-family:"Î¢ÈíÑÅºÚ";}
   
   a:link,a:visited { 
   text-decoration:none}
@@ -588,7 +588,7 @@ input::-moz-focus-inner{border:0px;}
   
   .waper h2 { 
   font-size:36px;
-  font-family:'å¾®è½¯é›…é»‘';
+  font-family:'Î¢ÈíÑÅºÚ';
   color:#4d4d4d;
   font-weight:100;
   margin-top:20px}
@@ -651,7 +651,7 @@ background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6
   z-index:1;
 	left:120px;
   top:0px;
-  font-family:"å¾®è½¯é›…é»‘"
+  font-family:"Î¢ÈíÑÅºÚ"
   font-size:40px; 
   font-weight:100;
   }
@@ -663,7 +663,7 @@ background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6
   left:0;
   bottom:80px;
   color:#fff; 
-  font-family:"å¾®è½¯é›…é»‘"}
+  font-family:"Î¢ÈíÑÅºÚ"}
   .discrip h2 {  font-size:40px; margin:11px 0 14px; font-weight:100}
   .discrip h3 {  font-size:24px;font-weight:100;}
   .discrip h4 {  font-size:20px; font-weight:100;}
@@ -777,7 +777,7 @@ background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6
   #freshcourse ul  { 
   padding-top:20px;
   list-style:none;
-  font-family:"å¾®è½¯é›…é»‘";
+  font-family:"Î¢ÈíÑÅºÚ";
   overflow:hidden;
   height:650px;}
   
@@ -889,7 +889,7 @@ background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6
   background:#404243; 
   font-size:15px; height:50px; 
   padding:15px 30px; 
-  font-family:"å¾®è½¯é›…é»‘"; 
+  font-family:"Î¢ÈíÑÅºÚ"; 
   color:#b5bdc0; 
   line-height:1.6
   }
@@ -918,7 +918,7 @@ background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6
   background:#fff; 
   font-size:15px; 
   padding:30px 30px 30px; 
-  font-family:"å¾®è½¯é›…é»‘"; 
+  font-family:"Î¢ÈíÑÅºÚ"; 
   color:#8e999d; 
   text-align:center;}
   #icons .arrowdown-png {
@@ -934,6 +934,18 @@ background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6
   .icontit {  padding:15px 30px 0 34px; overflow:hidden}
   .icontit h3 {  float:left; text-align:left; font-size:20px; width:305px; font-weight:100}
   .icontit h3.last {  width:178px; float:right; text-align:center}
+  
+  .esmButton {
+  	background-image: url("../images/button-6.png");
+  	height: 26px;
+  	width: 79px;
+  }
+  .esmButton:hover   {
+  	background-image: url("../images/button-7.png")
+  }
+  .esmButton:active   {
+  	background-image: url("../images/button-6.png")
+  }
  
   
 

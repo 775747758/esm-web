@@ -51,6 +51,9 @@ public class CableSwitch implements Serializable {
 	}
 
 	public String getProperties() {
+		if(properties==null) {
+			return "";
+		}
 		return this.properties;
 	}
 

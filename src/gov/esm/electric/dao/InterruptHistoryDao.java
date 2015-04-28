@@ -60,11 +60,11 @@ public class InterruptHistoryDao {
 	private static final String sql_getHistories = "select * from ("
 			+ "select " + "h.id,h.switchId,interruptTime,"
 			+ "u.realName as operatorName," + "cw.name as switchName,"
-			+ "case  h.operate " + " when 1 then '闭合' " + " when 0 then '断开' "
+			+ "case  h.operate " + " when 10 then '断开' " + " when 11 then '闭合' "+" when 12 then '闲置' "+" when 13 then '备用' "
 			+ " end as operate " + " from interrupt_history as h "
 			+ " left join user as u " + " on h.operater=u.id "
 			+ " left join cable_switch as cw " + " on h.switchId=cw.id "
-			+ " order by h.id desc) as V ";
+			+ "  order by interruptTime desc) as V ";
 	
 
 	public List<InterruptHistoryVo> getHistories(Date start, Date end,
@@ -78,6 +78,7 @@ public class InterruptHistoryDao {
 		}
 		sql.append(" limit ").append((index - 1) * size).append(",")
 				.append(size);
+		System.out.println(sql.toString());
 		return this.jdbcTemplate.query(sql.toString(), rowMapper);
 	}
 	
@@ -127,25 +128,44 @@ public class InterruptHistoryDao {
 			+ " end as operate " + " from interrupt_history as h "
 			+ " left join user as u " + " on h.operater=u.id "
 			+ " left join cable_switch as cw " + " on h.switchId=cw.id "
-			+ " order by h.id desc) as V ";
+			+ " order by interruptTime desc) as V ";
 
 	public int getHistoryTotal(Date start, Date end,String switchId,String operate, String operatorName) {
 		StringBuilder sql = new StringBuilder(128);
 		sql.append(sql_getHistoryTotal);
-		if (start != null && end != null) {
-			sql.append(" where interruptTime>=").append("'").append(formater.format(start)).append("'")
-					.append(" and ").append("interruptTime<=").append("'")
-					.append(formater.format(end)).append("'");
+		if(start != null){
+			if(countStr(sql.toString(),"where")==0)
+			{
+				sql.append(" where interruptTime>=").append("'").append(formaterDate.format(start)).append("'");
+			}
+			else {
+				sql.append(" and interruptTime>=").append("'").append(formaterDate.format(start)).append("'");
+			}
+			
 		}
+		
+		if(end!=null){
+			if(countStr(sql.toString(),"where")==0)
+			{
+				sql.append(" where ").append("interruptTime<=").append("'")
+				.append(formaterDate.format(end)).append("'");
+			}
+			else {
+				sql.append(" and ").append("interruptTime<=").append("'")
+				.append(formaterDate.format(end)).append("'");
+			}
+			
+		}
+		
 		
 		if(null!=switchId&&!"".equals(switchId))
 		{
 			if(countStr(sql.toString(),"where")==0)
 			{
-				sql.append(" where switchId =").append("'"+switchId+"'");
+				sql.append(" where switchId like").append("'%"+switchId+"%'");
 			}
 			else {
-				sql.append(" AND switchId =").append("'"+switchId+"'");
+				sql.append(" AND switchId like").append("'%"+switchId+"%'");
 			}
 				
 		}
@@ -176,21 +196,51 @@ public class InterruptHistoryDao {
 	}
 	
 	public List<InterruptHistoryVo> searchHistories(String switchId,String operate, String operatorName, int index, int size, Date begindate, Date enddate) {
+		
+		
+		//System.out.println("日期不为空");
+		
 		StringBuilder sql = new StringBuilder(128);
 		sql.append(sql_getHistories);
-		if (begindate != null && enddate != null) {
+		
+		if(begindate != null){
+			if(countStr(sql.toString(),"where")==0)
+			{
+				sql.append(" where interruptTime>=").append("'").append(formaterDate.format(begindate)).append("'");
+			}
+			else {
+				sql.append(" and interruptTime>=").append("'").append(formaterDate.format(begindate)).append("'");
+			}
+			
+		}
+		
+		if(enddate!=null){
+			if(countStr(sql.toString(),"where")==0)
+			{
+				sql.append(" where ").append("interruptTime<=").append("'")
+				.append(formaterDate.format(enddate)).append("'");
+			}
+			else {
+				sql.append(" and ").append("interruptTime<=").append("'")
+				.append(formaterDate.format(enddate)).append("'");
+			}
+			
+		}
+		
+		/*if (begindate != null && enddate != null) {
+			System.out.println("日期不为空");
 			sql.append(" where interruptTime>=").append("'").append(formaterDate.format(begindate)).append("'")
 					.append(" and ").append("interruptTime<=").append("'")
 					.append(formaterDate.format(enddate)).append("'");
-		}
+		}*/
 		if(null!=switchId&&!"".equals(switchId))
 		{
 			if(countStr(sql.toString(),"where")==0)
 			{
-				sql.append(" where switchId =").append("'"+switchId+"'");
+				sql.append(" where switchId like").append("'%"+switchId+"%'");
 			}
 			else {
-				sql.append(" AND switchId =").append("'"+switchId+"'");
+				sql.append(" AND switchId like").append("'%"+switchId+"%'");
 			}
 				
 		}
@@ -216,12 +266,15 @@ public class InterruptHistoryDao {
 			}
 			
 		}
-		
-		sql.append(" limit ").append((index - 1) * size).append(",").append(size);
-		
-		System.out.println(sql.toString());
+		if(index!=-1&&size!=-1){
+			sql.append(" limit ").append((index - 1) * size).append(",").append(size);
+		}
+		System.out.println("test::"+sql.toString());
 		return this.jdbcTemplate.query(sql.toString(), rowMapper); 
 	}
+	
+	
+	
 	
 	public List<InterruptHistoryVo> searchHistoriesByOperator(String operatorName,Date begindate, Date enddate) {
 		StringBuilder sql = new StringBuilder(128);

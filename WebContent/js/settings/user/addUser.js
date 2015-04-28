@@ -14,29 +14,31 @@ esm.settings.addUser.toolbar = [ {
 	text : '保存',
 	iconCls : 'icon-save',
 	handler : function() {
-		$('#dg').datagrid("endEdit", esm.settings.addUser.cussor);
-		var rows = jQuery("#dg").datagrid("getRows");
-		console.info(rows[0]);
-		if (rows != null && rows.length == 1) {
-			jQuery.ajax({
-				url : "/settings/user/addUser.do",
-				type : "post",
-				data : rows[0],
-				success : function(data, status, xhr) {
-					var message = "";
-					if (data.check < 0) {
-						message = "数据不合法.错误码:" + data.check
-					} else if (data.success) {
-						message = "添加成功!";
-					} else {
-						message = "添加失败!";
+		if($('#addUser').form('validate')){
+			$('#dg').datagrid("endEdit", esm.settings.addUser.cussor);
+			var rows = jQuery("#dg").datagrid("getRows");
+			console.info(rows[0]);
+			if (rows != null && rows.length == 1) {
+				jQuery.ajax({
+					url : "/settings/user/addUser.do",
+					type : "post",
+					data : rows[0],
+					success : function(data, status, xhr) {
+						var message = "";
+						if (data.check < 0) {
+							message = "数据不合法.错误码:" + data.check
+						} else if (data.success) {
+							message = "添加成功!";
+						} else {
+							message = "添加失败!";
+						}
+						jQuery.messager.alert("提示", message);
 					}
-					jQuery.messager.alert("提示", message);
-				}
-			});
+				});
+			}
+			
+			$('#dg').datagrid('loadData',{total:0,rows:[]}); 
 		}
-		
-		$('#dg').datagrid('loadData',{total:0,rows:[]}); 
 	}
 }, {
 	text : '取消',

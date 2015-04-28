@@ -19,8 +19,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import sun.rmi.runtime.Log;
-
 /**
  * 
  * @author XueLiang
@@ -37,12 +35,11 @@ public class CableSwitchDao {
 
 	private static final RowMapper<CableSwitch> rowMapper = new BeanPropertyRowMapper<CableSwitch>(CableSwitch.class);
 
-	private static final String sql_insert = "insert into cable_switch(code,name,properties,status) values (?,?,?,?)";
+	private static final String sql_insert = "insert into cable_switch(id, code,name,properties,status, type) values (?,?,?,?,?,?)";
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public void insert(CableSwitch entity) {
-		PreparedStatementCreator creator = SpringJdbcAssistor.getPreparedStatementCreator(sql_insert, entity.getCode(),
-				entity.getName(), entity.getProperties(), entity.getStatus());
+		PreparedStatementCreator creator = SpringJdbcAssistor.getPreparedStatementCreator(sql_insert, entity.getId(), entity.getCode(), entity.getName(), entity.getProperties(), entity.getStatus(), entity.getType());
 		KeyHolder holder = SpringJdbcAssistor.getGeneratedKeyHolder();
 		this.jdbcTemplate.update(creator, holder);
 	}
@@ -72,11 +69,13 @@ public class CableSwitchDao {
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public CableSwitch getCableSwitch(String id) {
-		List<CableSwitch> list=jdbcTemplate.query(sql_getCableSwitch, rowMapper, id);
+		//System.out.println("开关"+id+"size"+id.length());
+		List<CableSwitch> list=jdbcTemplate.query(sql_getCableSwitch, rowMapper, id.trim());
 		if(list.size()==0){
 			System.out.println("出错:"+id);
 		}
-		return this.jdbcTemplate.queryForObject(sql_getCableSwitch, rowMapper, id);
+		//return this.jdbcTemplate.queryForObject(sql_getCableSwitch, rowMapper, id);
+		return list.get(0); 
 	}
 
 	private static final String sql_getAll = "select id,status,type from cable_switch";
@@ -109,11 +108,26 @@ public class CableSwitchDao {
 	 * 
 	 * @return
 	 */
-	@Transactional(propagation = Propagation.SUPPORTS)
 	public List<Map<String, Object>> getSwitchByKeyword(String keyword) {
 		//return this.jdbcTemplate.query(sql_getAllSwitch, rowMapper);
 		StringBuilder temp=new StringBuilder(sql_getSwitchByKeyword);
 		temp.append(" ").append("'"+keyword+"%'");
+		System.out.println(temp.toString());
+		return jdbcTemplate.queryForList(temp.toString());
+	}
+	
+	/**
+	 * 得到所有name包含以keyword的开关
+	 * 
+	 * @return
+	 */
+	
+	private static  String sql_getSwitchNameByKeyword = "select name from cable_switch where name like";
+	
+	public List<Map<String, Object>> getSwitchNameByKeyword(String keyword) {
+		//return this.jdbcTemplate.query(sql_getAllSwitch, rowMapper);
+		StringBuilder temp=new StringBuilder(sql_getSwitchNameByKeyword);
+		temp.append(" ").append("'%").append(keyword).append("%'");
 		System.out.println(temp.toString());
 		return jdbcTemplate.queryForList(temp.toString());
 	}

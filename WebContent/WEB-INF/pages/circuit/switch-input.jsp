@@ -16,16 +16,24 @@
 					<td><input id="switchName" type="text" value="" class="easyui-validatebox" data-options="required:true" /><p/></td>
 				</tr>
 				<tr>
-					<td>上游开关id：</td>
+					<td>上游开关：</td>
 					<td><input id="lastSwitchId" type="text" value="" class="easyui-validatebox" data-options="required:true" /><p/></td>
 				</tr>
 				<tr>
-					<td>上游分支开关id：</td>
+					<td>上游分支开关：</td>
 					<td><input id="lastBranchSwitchId" type="text" value="" /></td>
 				</tr>
 				<tr>
-					<td>下游开关id：</td>
+					<td>上游分支线路：</td>
+					<td><input id="lastBranchLineId" type="text" value="" /></td>
+				</tr>
+				<tr>
+					<td>下游开关：</td>
 					<td><input id="nextSwitchId" type="text" value="" /><p/></td>
+				</tr>
+				<tr>
+					<td>下游分支开关：</td>
+					<td><input id="nextBranchSwitchId" type="text" value="" /></td>
 				</tr>
 			</table>
 		</form>

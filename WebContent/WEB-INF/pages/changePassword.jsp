@@ -1,4 +1,5 @@
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat-20030114.dtd">
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <html>
 <head>
 <title>Insert title here</title>
@@ -35,7 +36,6 @@
 <body>
 
 	请输入旧密码：<input id="oldPassword" type="text"  class="easyui-textbox" /><br> 
-	请输入旧密码：<input id="newPassword" type="text"  class="easyui-textbox" /><br>
-	<button id="submit"  onclick="changePassword()" width="50" height="30" class="easyui-linkbutton" >提交</button>
+	请输入新密码：<input id="newPassword" type="text"  class="easyui-textbox" /><br>
 </body>
 </html>

@@ -6,23 +6,25 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <script type="text/javascript" src="/js/settings/user/addUser.js"></script>
+<script type="text/javascript" src="/js/validate.js"></script>
 <title>添加用户</title>
 </head>
 <body>
+<div style="padding: 10px">
 	<table id="dg" class="easyui-datagrid" title="新增用户"
 		style="width: 100%; height:370px;"
 		data-options="singleSelect:true,collapsible:false,onClickRow: esm.settings.addUser.onClickRow,toolbar:esm.settings.addUser.toolbar">
 		<thead>
 			<tr>
 				<th data-options="field:'id',width:80">用户编号</th>
-				<th data-options="field:'name',width:100,editor:'text'">用户名</th>
+				<th data-options="field:'name',width:100" editor="{type:'validatebox',options:{validType:'username'}}">用户名</th>
 				<th
-					data-options="field:'password',width:150,align:'right',editor:'text'">密码</th>
+					data-options="field:'password',width:150,align:'right'" editor="{type:'validatebox',options:{validType:'username'}}">密码</th>
 				<th
-					data-options="field:'realName',width:150,align:'center',editor:'text'">用户姓名</th>
+					data-options="field:'realName',width:150,align:'center',editor:'text'" editor="{type:'validatebox',options:{validType:'name'}}">用户姓名</th>
 				<th
-					data-options="field:'email',width:150,align:'right',editor:'text'">电子邮件</th>
-				<th data-options="field:'phone',width:100,editor:'text'">手机号</th>
+					data-options="field:'email',width:150,align:'right'"  editor="{type:'validatebox',options:{validType:'email'}}">电子邮件</th>
+				<th data-options="field:'phone',width:100"  editor="{type:'validatebox',options:{validType:'mobile'}}">手机号</th>
 				<th
 					data-options="field:'roleId',width:100,formatter:function(value,row){
 							return row.roleId;
@@ -51,5 +53,6 @@
 			</tr>
 		</tbody>
 	</table>
+	</div>
 </body>
 </html>

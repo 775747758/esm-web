@@ -99,7 +99,7 @@ public class UserDao {
 			+ "user_role_relation as relation," + "role," + "status "
 			+ "where " + "user.id=relation.userId  and "
 			+ "relation.roleId=role.id and " + "user.statusId=status.id "
-			+ "order by user.id  limit ?,? ";
+			+ " order by user.id DESC limit ?,? ";
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public List<UserVo> getUsers(int index, int size) {

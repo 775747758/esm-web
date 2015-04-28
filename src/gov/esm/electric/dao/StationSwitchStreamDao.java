@@ -27,7 +27,7 @@ public class StationSwitchStreamDao {
 	private static final RowMapper<SwitchStream> rowMapper = new BeanPropertyRowMapper<SwitchStream>(
 			SwitchStream.class);
 
-	private static final String sql_getDownstream = "select id,stationId,switchStream,status from station_switchstream_relation where stationId=?";
+	private static final String sql_getDownstream = "select id,stationId,switchStream from station_switchstream_relation where stationId=?";
 
 	/**
 	 * 得到一个变电站所影响的所有开关（不包括握手开关）
@@ -47,7 +47,6 @@ public class StationSwitchStreamDao {
 	 * @return
 	 */
 	public int setStationStatus(String switchId,int status) {
-		//System.out.println(status+"jjjjjjjjjjjjjjjjjjjj"+switchId);
 		return this.jdbcTemplate.update(sql_setStationStatus, status, switchId);
 	}
 	

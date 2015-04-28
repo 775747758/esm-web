@@ -9,6 +9,8 @@ esm.common.tab.create = function(name, url) {
 	if(url=="/monitor.do")
 	{
 		window.open("http://localhost:8080/monitor.do"); //打开窗口
+	} else if (url=="/circuit/edit.do") {
+		window.open("http://localhost:8080/circuit/edit.do"); //打开窗口
 	}
 	else
 	{
@@ -21,10 +23,17 @@ esm.common.tab.create = function(name, url) {
 			jQuery('#workArea').tabs('add', {
 				title : name,
 				async : true,
-				content : '<div style="padding:10px">' + data + '</div>',
+				content : '<div>' + data + '</div>',
 				closable : true
 			});
 		});
+		
 	}
 	
+};
+
+
+esm.common.tab.refresh = function() {
+	var tab = $('#workArea').tabs('getSelected');
+	tab.panel('refresh', '/circuit/diagram.do');
 };

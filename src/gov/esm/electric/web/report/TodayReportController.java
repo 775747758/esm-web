@@ -8,15 +8,35 @@ package gov.esm.electric.web.report;
 
 import gov.esm.electric.dao.InterruptHistoryDao;
 import gov.esm.electric.entity.InterruptHistoryVo;
+import gov.esm.electric.entity.MessageVo;
 import gov.esm.electric.entity.TodayHistoryVo;
 import gov.esm.electric.service.InterruptHistoryService;
+import gov.esm.electric.web.circuit.JsonBean;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import jxl.Workbook;
+import jxl.write.DateFormat;
+import jxl.write.DateTime;
+import jxl.write.Label;
+import jxl.write.WritableCellFormat;
+import jxl.write.WritableSheet;
+import jxl.write.WritableWorkbook;
+import jxl.write.WriteException;
+import jxl.write.biff.RowsExceededException;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -63,59 +83,36 @@ public class TodayReportController {
 	public Object temp() {
 		Map<String, Object> map = new HashMap<String, Object>();
 		List<TodayHistoryVo> rows = interruptHistoryService.getToDayHistories();
+		
 		map.put("rows", rows);
 		return map;
 	}
-	/*@RequestMapping(value = "/yestaday-interrupt-histories.do", method = RequestMethod.GET)
-	@ResponseBody
-	public Object getYestadayInterruptHistories(
-			@RequestParam(value = "rows", defaultValue = "10") int size,
-			@RequestParam(value = "page", defaultValue = "1") int pageNo) {
-		Map<String, Object> map = new HashMap<String, Object>();
-		List<InterruptHistoryVo> rows=interruptHistoryDao.getYestadayHistories();
-		Calendar cal=Calendar.getInstance();
-        cal.add(Calendar.DATE,-1);
-        Date yesDate=cal.getTime();
-        SimpleDateFormat formaterDate = new SimpleDateFormat("yyyy-MM-dd");
-		if(rows.size()>0){
-			map.put("rows", rows);
-			map.put("date", formaterDate.format(yesDate));
-		}
-		return map;
-	}
-
 	
+	/*
 	 * 导出excel报表
-	 
-	@RequestMapping(value = "/interrupt-histories-excel.do")
-	@ResponseBody
-	public JsonBean getInterruptHistoriesExcel(HttpServletRequest req,HttpServletResponse resp)  {
-		System.out.println("enter method");
-		JsonBean json = new JsonBean();
+	 */
+	@RequestMapping(value = "/today_report-excel.do",method = RequestMethod.GET)
+	public JsonBean getInterruptHistoriesExcel(HttpServletRequest req,HttpServletResponse resp,@RequestParam(value = "rows", defaultValue = "10") int size,
+			@RequestParam(value = "page", defaultValue = "1") int pageNo)  {
+		SimpleDateFormat sdf =   new SimpleDateFormat( "MM/dd/yyyy" );//01/25/2015
 		try {
-			WritableWorkbook  wwb=Workbook.createWorkbook(new File("D:\\interrupt-histories.xls"));
+			WritableWorkbook  wwb=Workbook.createWorkbook(new File("D:\\today_report-excel.xls"));
 			WritableSheet ws= wwb.createSheet("student", 0);
-			Label label1=new Label(0, 0, "开关名称");
-			Label label2=new Label(1, 0, "时间");
-			Label label3=new Label(2, 0, "操作类型");
-			Label label4=new Label(3, 0, "操作员");
+			Label label1=new Label(0, 0, "用户名");
+			Label label2=new Label(1, 0, "开关/线路");
+			Label label5=new Label(2, 0, "签字");
 			ws.addCell(label1);
 			ws.addCell(label2);
-			ws.addCell(label3);
-			ws.addCell(label4);
-			List<InterruptHistoryVo> rows = this.interruptHistoryDao.getAllHistories(null, null);
+			ws.addCell(label5);
+			List<TodayHistoryVo> rows = interruptHistoryService.getToDayHistories();
 			DateFormat df=new DateFormat("yyyy-MM-dd HH:mm:ss");
 			WritableCellFormat wcf=new WritableCellFormat(df);
 			for(int i=0;i<rows.size();i++)
 			{
-				Label labelSN=new Label(0, i+1, rows.get(i).getSwitchName());
+				Label labelSN=new Label(0, i+1, rows.get(i).getOperatorName());
 				ws.addCell(labelSN);
-				DateTime dateTime=new DateTime(1, i+1, rows.get(i).getInterruptTime(), wcf);
-				ws.addCell(dateTime);
-				Label labelT=new Label(2, i+1, rows.get(i).getOperate());
+				Label labelT=new Label(1, i+1, rows.get(i).getOperate());
 				ws.addCell(labelT);
-				Label labelON=new Label(3, i+1, rows.get(i).getOperatorName());
-				ws.addCell(labelON);
 			}
 			
 			wwb.write();
@@ -129,14 +126,14 @@ public class TodayReportController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		File file = new File("D:/interrupt-histories.xls");
+		File file = new File("D:/today_report-excel.xls");
 		System.out.println(file.exists());
 		if(file.exists()){
 			System.out.println(file.exists()+"1");
 			//设置相应类型application/octet-stream
 			resp.setContentType("multipart/form-data");
 			//设置头信息
-			resp.setHeader("Content-Disposition", "attachment;filename=" + "interrupt-histories.xls");
+			resp.setHeader("Content-Disposition", "attachment;filename=" + "today_report-excel.xls");
 			InputStream inputStream;
 			try {
 				System.out.println(file.exists()+"进入try");
@@ -161,50 +158,9 @@ public class TodayReportController {
 				e.printStackTrace();
 			}
 			
-			json.setSuccess(true);
-			
-		}else{
-			json.setSuccess(false);
 		}
-		json.setSuccess(true);
 		return null;
 	}
+
 	
-	
-	 * 搜索 switchId:switchID,operate:operate,beginDate:beginDate,endDate:endDate};
-	 
-	@RequestMapping(value = "/interrupt-histories-search.do", method = RequestMethod.POST)
-	@ResponseBody
-	public Object searchInterruptHistories(
-			@RequestParam(value = "rows", defaultValue = "10") int size,
-			@RequestParam(value = "page", defaultValue = "1") int pageNo,
-			@RequestParam(value = "switchId") String switchId,
-			@RequestParam(value = "operate") String operate,
-			@RequestParam(value = "beginDate") String beginDate,
-			@RequestParam(value = "endDate") String endDate,
-			@RequestParam(value = "operatorName") String operatorName
-			) {
-		
-		SimpleDateFormat sdf =   new SimpleDateFormat( "MM/dd/yyyy" );//01/25/2015
-		 
-			Date enddate=null;
-			Date begindate = null;
-			try {
-				enddate = sdf.parse(endDate);
-				begindate=sdf.parse(beginDate);
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		
-		
-		Map<String, Object> map = new HashMap<String, Object>();
-		List<InterruptHistoryVo> rows = this.interruptHistoryDao.searchHistories(switchId,operate,operatorName,pageNo,size,begindate,enddate);
-		map.put("rows", rows);
-		int total = this.interruptHistoryDao.getHistoryTotal(begindate, enddate,switchId,operate,operatorName);
-		map.put("total", total);
-		//System.out.println(endDate);
-		return map;
-	}*/
 }

@@ -36,15 +36,26 @@
 	
 	//断电报表
 	toolbar = [ {
-		text : '导出报表',
+		text : '按搜索条件导出报表',
 		handler : function() {
+
 			
-			location.href = "report/interrupt-histories-excel.do";
+			var switchID = $("input[name='switchID']").val();
+			var operatorName = $("input[name='operator']").val();
+			var operate = $("input[name='operate']").val();
+			var beginDate = $("#beginDate").datebox("getValue");
+			var endDate = $("#endDate").datebox("getValue");
+			
+			
+			var url="report/interrupt-histories-excel.do"+"?switchId="+switchID+"&operatorName="+operatorName+"&operate="+operate+"&beginDate="
+			+beginDate+"&endDate="+endDate;
+			location.href=url;
+			 
 		}
-	}, {
-		text : '打印报表',
+	} , {
+		text : '导出今日报表',
 		handler : function() {
-			
+			 location.href="report/today_interrupt-histories-excel.do";
 		}
 	} ];
 	
@@ -59,20 +70,35 @@
 			var beginDate = $("#beginDate").datebox("getValue");
 			var endDate = $("#endDate").datebox("getValue");
 			var param = {switchId:switchID,operate:operate,operatorName:operatorName,beginDate:beginDate,endDate:endDate};
-			$('#histories').datagrid({
-				url:'/report/interrupt-histories-search.do',
-				queryParams:param,
-				toolbar:toolbar,
-				rownumbers:true,
-				singleSelect:true,
-				pagination:true, 
-				columns:[[
-				    {field:'switchName',align:'center',width:160},
-				    {field:'interruptTime',width:200,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');}},
-				    {field:'operate',width:150,align:'center'},
-				    {field:'operatorName',width:150,align:'center'},
-				]]
-			}); 
+			
+			var isSerch=true;
+			if(beginDate!=""&&endDate!=""){
+				if(beginDate>endDate){
+					$.messager.alert('提示信息','您选择的开始日期大于结束日期，请重新选择！')
+					isSerch=false;
+				}
+			}
+			
+			if(isSerch){
+				$('#histories').datagrid({
+					url:'/report/interrupt-histories-search.do',
+					queryParams:param,
+					toolbar:toolbar,
+					rownumbers:true,
+					singleSelect:true,
+					pagination:true, 
+					columns:[[
+					    {field:'switchName',align:'center',width:160},
+					    {field:'interruptTime',width:200,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');}},
+					    {field:'operate',width:150,align:'center'},
+					    {field:'operatorName',width:150,align:'center'},
+					]]
+				}); 
+			}
+			
+				
+			
+			
 		});
 		
 	    
@@ -88,7 +114,7 @@
 <title>断电记录</title>
 </head>
 <body>
-
+<div style="padding: 10px">
 <div id="DIV_toolbar'" style=" margin :0px; padding :5px;">
 	开关ID:
    <input  style="width:50px;" class="easyui-textbox" type="text" name="switchID"></input>
@@ -99,8 +125,10 @@
       操作类型：
       <select id="cc" class="easyui-combobox" name="operate" style="width:100px;" data-options="required:true">
       <option value="2">全部</option>
-      <option value="闭闸">闭合</option>
-      <option value="开闸">断开</option>
+      <option value="闭合">闭合</option>
+      <option value="断开">断开</option>
+      <option value="闲置">闲置</option>
+      <option value="备用">备用</option>
      </select>
         &nbsp;
         开始时间：
@@ -113,7 +141,7 @@
     </div>
 
 	<table id="histories" class="easyui-datagrid" title="断电记录"
-		style="width: 100%; height: 370px"
+		style="width: 100%; height: 600px"
 		data-options="toolbar:toolbar,rownumbers:true,singleSelect:true,pagination:true,url:'/report/interrupt-histories.do',method:'post'">
 		<thead>
 			<tr>
@@ -132,6 +160,6 @@
 		</tbody>
 	</table>
 	
-	
+	</div>
 </body>
 </html>

@@ -1,5 +1,8 @@
 package gov.esm.electric.service;
 
+import java.util.Calendar;
+import java.util.Locale;
+
 import gov.esm.assistor.SpringJdbcAssistor;
 import gov.esm.electric.domain.CableDiagram;
 
@@ -60,5 +63,13 @@ public class CableDiagramService {
 	public CableDiagram getRecentCableDiagram() {
 		return this.jdbcTemplate.queryForObject(sql_getRecentCableDiagram,
 				rowMapper);
+	}
+
+	public void saveWithSvgOperaterId(String svg, int operaterId) {
+		CableDiagram cableDiagram = new CableDiagram();
+		cableDiagram.setHtml(svg);
+		cableDiagram.setOperater(operaterId);
+		cableDiagram.setCreateTime(Calendar.getInstance(Locale.PRC).getTime());
+		insert(cableDiagram);
 	}
 }

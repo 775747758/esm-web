@@ -79,6 +79,17 @@ public class MessageDao {
 		return this.jdbcTemplate.query(sql.toString(), rowMapperMessageVo);
 	}
 	
+	public List<MessageVo> getTodayMessage() {
+		Calendar cal=Calendar.getInstance();
+	    Date today=cal.getTime();
+		StringBuilder sql = new StringBuilder(128);
+		sql.append(sql_messages);
+		sql.append(" and loginTime>=").append("'").append(formaterDate.format(today)+" 08:00:00").append("'")
+		.append(" and ").append("logoutTime<=").append("'")
+		.append(formaterDate.format(new Date())+" 18:00:00").append("'");
+		return this.jdbcTemplate.query(sql.toString(), rowMapperMessageVo);
+	}
+	
 	private static final String sql_messagesTotal = ""
 			+ "select count(1)  "
 			+ "FROM user,user_log,message "

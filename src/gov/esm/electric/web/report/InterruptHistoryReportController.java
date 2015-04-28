@@ -88,6 +88,7 @@ public class InterruptHistoryReportController {
 		Map<String, Object> map = new HashMap<String, Object>();
 		List<InterruptHistoryVo> rows = this.interruptHistoryDao.getHistories(
 				null, null, pageNo, size);
+		System.out.println(rows.get(0).getOperate());
 		map.put("rows", rows);
 		int total = this.interruptHistoryDao.getHistoryTotal(null, null,null,null,null);
 		map.put("total", total);
@@ -115,23 +116,50 @@ public class InterruptHistoryReportController {
 	/*
 	 * 导出excel报表
 	 */
-	@RequestMapping(value = "/interrupt-histories-excel.do")
-	@ResponseBody
-	public JsonBean getInterruptHistoriesExcel(HttpServletRequest req,HttpServletResponse resp)  {
-		System.out.println("enter method");
+	@RequestMapping(value = "/interrupt-histories-excel.do",method = RequestMethod.GET)
+	public JsonBean getInterruptHistoriesExcel(HttpServletRequest req,HttpServletResponse resp,
+			@RequestParam(value = "switchId") String switchId,
+			@RequestParam(value = "operate") String operate,
+			@RequestParam(value = "beginDate") String beginDate,
+			@RequestParam(value = "endDate") String endDate,
+			@RequestParam(value = "operatorName") String operatorName
+			)  {
+		System.out.println(switchId);
+		SimpleDateFormat sdf =   new SimpleDateFormat( "MM/dd/yyyy" );//01/25/2015
+		 
+		Date enddate=null;
+		Date begindate = null;
+		
+	
+		try {
+			if(beginDate!=null&&!"".equals(beginDate)){
+				begindate=sdf.parse(beginDate);
+			}
+			if(endDate!=null&&!"".equals(beginDate)){
+				enddate = sdf.parse(endDate);
+			}
+			
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		JsonBean json = new JsonBean();
 		try {
 			WritableWorkbook  wwb=Workbook.createWorkbook(new File("D:\\interrupt-histories.xls"));
 			WritableSheet ws= wwb.createSheet("student", 0);
 			Label label1=new Label(0, 0, "开关名称");
 			Label label2=new Label(1, 0, "时间");
-			Label label3=new Label(2, 0, "操作类型");
+			Label label3=new Label(2, 0, "当前状态");
 			Label label4=new Label(3, 0, "操作员");
+			Label label5=new Label(4, 0, "签字");
 			ws.addCell(label1);
 			ws.addCell(label2);
 			ws.addCell(label3);
 			ws.addCell(label4);
-			List<InterruptHistoryVo> rows = this.interruptHistoryDao.getAllHistories(null, null);
+			ws.addCell(label5);
+			List<InterruptHistoryVo> rows = this.interruptHistoryDao.searchHistories(switchId,operate,operatorName,-1,-1,begindate,enddate);
 			DateFormat df=new DateFormat("yyyy-MM-dd HH:mm:ss");
 			WritableCellFormat wcf=new WritableCellFormat(df);
 			for(int i=0;i<rows.size();i++)
@@ -198,6 +226,95 @@ public class InterruptHistoryReportController {
 		return null;
 	}
 	
+	
+	/*
+	 * 导出excel报表
+	 */
+	@RequestMapping(value = "/today_interrupt-histories-excel.do",method = RequestMethod.GET)
+	public JsonBean getTodayInterruptHistoriesExcel(HttpServletRequest req,HttpServletResponse resp)  {
+		SimpleDateFormat sdf =   new SimpleDateFormat( "MM/dd/yyyy" );//01/25/2015
+
+		JsonBean json = new JsonBean();
+		try {
+			WritableWorkbook  wwb=Workbook.createWorkbook(new File("D:\\today_interrupt-histories-excel.xls"));
+			WritableSheet ws= wwb.createSheet("student", 0);
+			Label label1=new Label(0, 0, "开关名称");
+			Label label2=new Label(1, 0, "时间");
+			Label label3=new Label(2, 0, "当前状态");
+			Label label4=new Label(3, 0, "操作员");
+			Label label5=new Label(4, 0, "签字");
+			ws.addCell(label1);
+			ws.addCell(label2);
+			ws.addCell(label3);
+			ws.addCell(label4);
+			ws.addCell(label5);
+			List<InterruptHistoryVo> rows = this.interruptHistoryDao.getToDayHistories();
+			DateFormat df=new DateFormat("yyyy-MM-dd HH:mm:ss");
+			WritableCellFormat wcf=new WritableCellFormat(df);
+			for(int i=0;i<rows.size();i++)
+			{
+				Label labelSN=new Label(0, i+1, rows.get(i).getSwitchName());
+				ws.addCell(labelSN);
+				DateTime dateTime=new DateTime(1, i+1, rows.get(i).getInterruptTime(), wcf);
+				ws.addCell(dateTime);
+				Label labelT=new Label(2, i+1, rows.get(i).getOperate());
+				ws.addCell(labelT);
+				Label labelON=new Label(3, i+1, rows.get(i).getOperatorName());
+				ws.addCell(labelON);
+			}
+			
+			wwb.write();
+			wwb.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (RowsExceededException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (WriteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		File file = new File("D:/today_interrupt-histories-excel.xls");
+		System.out.println(file.exists());
+		if(file.exists()){
+			System.out.println(file.exists()+"1");
+			//设置相应类型application/octet-stream
+			resp.setContentType("multipart/form-data");
+			//设置头信息
+			resp.setHeader("Content-Disposition", "attachment;filename=" + "today_interrupt-histories-excel.xls");
+			InputStream inputStream;
+			try {
+				System.out.println(file.exists()+"进入try");
+				inputStream = new FileInputStream(file);
+				OutputStream ouputStream = resp.getOutputStream();
+				byte b[] = new byte[1024];
+				int n ;
+				while((n = inputStream.read(b)) != -1){
+					System.out.println(file.exists()+"进入while");
+					ouputStream.write(b,0,n);
+				}
+				System.out.println(file.exists()+"进入while结束");
+				//关闭流、释放资源
+				ouputStream.close();
+				inputStream.close();
+				System.out.println(file.exists()+"关闭 ");
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			json.setSuccess(true);
+			
+		}else{
+			json.setSuccess(false);
+		}
+		json.setSuccess(true);
+		return null;
+	}
+	
 	/*
 	 * 搜索 switchId:switchID,operate:operate,beginDate:beginDate,endDate:endDate};
 	 */
@@ -217,9 +334,17 @@ public class InterruptHistoryReportController {
 		 
 			Date enddate=null;
 			Date begindate = null;
+			
+		
 			try {
-				enddate = sdf.parse(endDate);
-				begindate=sdf.parse(beginDate);
+				if(beginDate!=null){
+					begindate=sdf.parse(beginDate);
+				}
+				if(endDate!=null){
+					enddate = sdf.parse(endDate);
+				}
+				
+				
 			} catch (ParseException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -232,7 +357,7 @@ public class InterruptHistoryReportController {
 		map.put("rows", rows);
 		int total = this.interruptHistoryDao.getHistoryTotal(begindate, enddate,switchId,operate,operatorName);
 		map.put("total", total);
-		//System.out.println(endDate);
+		System.out.println("总量"+total);
 		return map;
 	}
 }

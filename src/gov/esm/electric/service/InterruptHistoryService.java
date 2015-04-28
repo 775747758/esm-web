@@ -97,6 +97,7 @@ public class InterruptHistoryService {
 	
 	public List<UserLogVo> getUserLog(int index,int size) {
 		List<UserLog> list=userLogDao.getUserLog(index,size);
+		System.out.println("用户日志表"+list.size());
 		List<UserLogVo> temp=new ArrayList<UserLogVo>();
 		
 		for(int i=0;i<list.size();i++){
@@ -107,11 +108,41 @@ public class InterruptHistoryService {
 			List<InterruptHistoryVo> historys=interruptHistoryDao.searchHistoriesByOperator(userLogVo.getOperatorName(),userLogVo.getLoginTime(),userLogVo.getLogoutTime());
 			StringBuilder builder=new StringBuilder();
 			for(int j=0;j<historys.size();j++){
+				System.out.println("i:"+i+"J:"+j);
+				
 				if(j==historys.size()-1){
-					builder.append(historys.get(i).getSwitchName()).append(historys.get(i).getOperate());
+					builder.append(historys.get(j).getSwitchName()).append(historys.get(j).getOperate());
 				}
 				else{
-					builder.append(historys.get(i).getSwitchName()).append(historys.get(i).getOperate()).append(",");
+					builder.append(historys.get(j).getSwitchName()).append(historys.get(j).getOperate()).append(",");
+				}
+				
+			}
+			userLogVo.setOperate(builder.toString());
+			temp.add(userLogVo);
+		}
+		return temp;
+	}
+	
+	
+	public List<UserLogVo> getTodayUserLog() {
+		List<UserLog> list=userLogDao.getTodayUserLog();
+		List<UserLogVo> temp=new ArrayList<UserLogVo>();
+		for(int i=0;i<list.size();i++){
+			UserLogVo userLogVo=new UserLogVo();
+			userLogVo.setLoginTime(list.get(i).getLoginTime());
+			userLogVo.setLogoutTime(list.get(i).getLogoutTime());
+			userLogVo.setOperatorName(userDao.getRealName(list.get(i).getUserId()));
+			List<InterruptHistoryVo> historys=interruptHistoryDao.searchHistoriesByOperator(userLogVo.getOperatorName(),userLogVo.getLoginTime(),userLogVo.getLogoutTime());
+			StringBuilder builder=new StringBuilder();
+			for(int j=0;j<historys.size();j++){
+				System.out.println("i:"+i+"J:"+j);
+				
+				if(j==historys.size()-1){
+					builder.append(historys.get(j).getSwitchName()).append(historys.get(j).getOperate());
+				}
+				else{
+					builder.append(historys.get(j).getSwitchName()).append(historys.get(j).getOperate()).append(",");
 				}
 				
 			}

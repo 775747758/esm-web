@@ -33,6 +33,13 @@ public class SwitchUpStreamDao {
 		return holder.getKey().intValue();
 	}
 
+	
+	private static final String sql_update = "update switch_upstream set switchId=?,upstream=? where id=?";
+
+	public int update(SwitchUpStream entity) {
+		return this.jdbcTemplate.update(sql_update, entity.getSwitchId(), entity.getUpstream(), entity.getId());
+	}
+
 	public void insert(SwitchUpStream entity) {
 		int id = this.insert(entity.getSwitchId(), entity.getUpstream());
 		entity.setId(id);
@@ -43,5 +50,23 @@ public class SwitchUpStreamDao {
 	public List<SwitchUpStream> getUpstream(String switchId) {
 		return this.jdbcTemplate.query(sql_getUpstream,
 				new Object[] { switchId }, rowMapper);
+	}
+
+	private static final String sql_deleteBySwitchId = "delete from switch_upstream where switchId=?";
+
+	public int deleteWithSwitchId(String switchId) {
+		return this.jdbcTemplate.update(sql_deleteBySwitchId, switchId);
+	}
+
+	private static final String sql_getAllUpstream = "select id,switchId,upstream from switch_upstream";
+	
+	public List<SwitchUpStream> getAll() {
+		return this.jdbcTemplate.query(sql_getAllUpstream, rowMapper);
+	}
+
+	
+	private static final String sql_deleteById = "delete from switch_upstream where id=?";
+	public int deleteWithId(int id) {
+		return this.jdbcTemplate.update(sql_deleteById, id);
 	}
 }

@@ -1,5 +1,6 @@
 package gov.esm.electric.service;
 
+import gov.esm.assistor.ListUtils;
 import gov.esm.electric.cache.SwitchCache;
 import gov.esm.electric.dao.CableSwitchDao;
 import gov.esm.electric.dao.StationSwitchStreamDao;
@@ -9,7 +10,9 @@ import gov.esm.electric.domain.CableSwitch;
 import gov.esm.electric.domain.SwitchDownStream;
 import gov.esm.electric.domain.SwitchStream;
 import gov.esm.electric.domain.SwitchUpStream;
+import gov.esm.assistor.DataSource;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,20 +48,19 @@ public class CableSwitchService {
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public void insert(CableSwitch entity) {
 		this.cableSwitchDao.insert(entity);
-		this.switchCache.put(entity);
 	}
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public int update(CableSwitch entity) {
 		int affected = this.cableSwitchDao.update(entity);
-		switchCache.put(entity);
 		return affected;
 	}
 
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public int updateStatus(int status, String id) {
+		System.out.println(status);
 		int affected = this.cableSwitchDao.updateStatus(status, id);
-		CableSwitch entity = switchCache.getCableSwitch(id);
+		CableSwitch entity = getCableSwitch(id);
 		if (entity != null) {
 			entity.setStatus(status);
 		}
@@ -146,4 +148,30 @@ public class CableSwitchService {
 		return cableSwitchDao.getSwitchByKeyword(keyword);
 	}
 	
+	
+	public List<Map<String, Object>> getSwitchNameByKeyword(String keyword) {
+		return cableSwitchDao.getSwitchNameByKeyword(keyword);
+	}
+	
+	/**
+	 * 根据开关id,开关编码,开关名称添加一个开关
+	 * @param switchId
+	 * @param switchCode
+	 * @param switchName
+	 */
+	public void addNormalSwithWithIdCodeName(String switchId, String switchCode, String switchName) {
+		CableSwitch cableSwitch = new CableSwitch();
+		cableSwitch.setId(switchId);
+		cableSwitch.setCode(switchCode);
+		cableSwitch.setName(switchName);
+		cableSwitch.setType(DataSource.SWITCH_TYPE_NORMAL);
+		cableSwitch.setStatus(DataSource.STATUS_SWITCH_CLOSE);
+		cableSwitchDao.insert(cableSwitch);
+	}
+
+	public void updateWithSwitchIdSwitchTitle(String switchId, String switchTitle) {
+		CableSwitch cableSwitch = cableSwitchDao.getCableSwitch(switchId);
+		cableSwitch.setName(switchTitle);
+		cableSwitchDao.update(cableSwitch);
+	}
 }

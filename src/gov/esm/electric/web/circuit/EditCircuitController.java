@@ -1,52 +1,21 @@
 package gov.esm.electric.web.circuit;
 
-import gov.esm.electric.domain.CableDiagram;
-import gov.esm.electric.domain.CableLine;
-import gov.esm.electric.domain.CableSwitch;
-import gov.esm.electric.domain.SwitchUpStream;
-import gov.esm.electric.domain.User;
-import gov.esm.electric.service.CableDiagramService;
-import gov.esm.electric.service.CableLineService;
-import gov.esm.electric.service.CableSwitchService;
-import gov.esm.electric.service.InterruptHistoryService;
-import gov.esm.electric.service.LineSwitchRelationService;
-import gov.esm.electric.web.Constant;
-
-import java.util.Calendar;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.logging.Logger;
 
-import javax.annotation.Resource;
+import gov.esm.electric.service.CableDiagramService;
+import gov.esm.electric.service.CircuitService;
+
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
-import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
+@RequestMapping("/circuit")
 public class EditCircuitController {
-	@Resource
-	private LineSwitchRelationService lineSwitchRelationService;
-
-	@Resource
-	private InterruptHistoryService interruptHistoryService;
-
-	@Resource
-	private CableLineService cableLineService;
-
-	@Resource
-	private CableSwitchService cableSwitchService;
-
-	@Resource
-	private CableDiagramService cableDiagramService;
-	
-	private static final Logger logger = Logger.getLogger("stdout");
 
 	/**
 	 * 显示编辑电路图页面
@@ -54,81 +23,153 @@ public class EditCircuitController {
 	 * @param req
 	 * @return
 	 */
-	@RequestMapping("/circuit/edit.do")
+	@RequestMapping("/edit.do")
 	public String editDiagram(HttpServletRequest req) {
+		req.getSession().setAttribute("cableDiagram", cableDiagramService.getRecentCableDiagram());
 		return "/circuit/edit-diagram";
 	}
-
+	/**
+	 * 跳转至线路添加页面
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping("/lineInput.do")
+	public String lineInput(HttpServletRequest req) {
+		return "/circuit/line-input";
+	}
+	/**
+	 * 跳转至开关添加页面
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping("/switchInput.do")
+	public String switchInput(HttpServletRequest req) {
+		return "/circuit/switch-input";
+	}
+	
+	/**
+	 * 跳转至开关添加页面
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping("/textInput.do")
+	public String textInput(HttpServletRequest req) {
+		req.setAttribute("elementText", req.getParameter("elementText"));
+		return "/circuit/text-input";
+	}
+	
 	/**
 	 * 在编辑线路页面中，当用户画完一条线，弹出填写线路基本信息对话框， 用户填写完后，点保存按钮，就会把数据提交到这里.
 	 * 
 	 * @param req
 	 * @return
 	 */
-	@RequestMapping("/circuit/addLineForm.do")
+	@RequestMapping("/addLineForm.do")
 	@ResponseBody
 	public Object addLineForm(HttpServletRequest req) {
 		String lineName = req.getParameter("lineName");
 		String lineId = req.getParameter("lineId");
 		String parentLineId = req.getParameter("parentLineId");
-		String upstreamSwitchIds = req.getParameter("upstreamSwitchIds");
+		String switchId = req.getParameter("upstreamSwitchIds");
 		String svg = req.getParameter("svg");
 		Map<String, Object> map = new HashMap<String, Object>();
-
-		// TODO 文杰，你在这里写一下,检查客户端的数据是否合法
-
-		HttpSession session = req.getSession();
-		User user = null;
-		if (session != null) {
-			Object obj = session.getAttribute(Constant.SESSION_KEY_USER);
-			user = (User) obj;
-		}
-		if (user == null) {
-			map.put("message", "请重新登录");
+		try{
+			map =  circuitService.addLine(lineName, lineId, parentLineId, switchId, svg, req);
+		} catch (Exception e) {
+			map.put("message", "操作有误，如有问题请联系管理员");
 			map.put("oc", -1);
-			return map;
 		}
-		// 保存svg
-		CableDiagram cableDiagram = new CableDiagram();
-		cableDiagram.setHtml(svg);
-		cableDiagram.setOperater(user.getId());
-		cableDiagram.setCreateTime(Calendar.getInstance(Locale.PRC).getTime());
-		cableDiagramService.insert(cableDiagram);
-
-		// 构造一个CableLine实例，保存起来
-		CableLine line = new CableLine();
-		line.setId(lineId);
-		line.setCode(lineId);
-		line.setParentId(parentLineId);
-		line.setName(lineName);
-		line.setStatus(1);
-		this.cableLineService.insert(line);
-
-		// 找到上游的所有开关，这些上游开关和这条线建立关联
-		if (StringUtils.isNotBlank(upstreamSwitchIds)) {
-			String[] ids = upstreamSwitchIds.split(",");
-			for (int i = 0; i < ids.length; i++) {
-				if (StringUtils.isNotBlank(ids[i])) {
-					ids[i] = ids[i].trim();
-					CableSwitch cs = this.cableSwitchService.getCableSwitch(ids[i]);
-					if (cs == null) {
-						logger.info("上游开关:" + ids[i] + "无效。");
-					} else {
-						// 您画的线，和这些开关建立关系,这样开关就能影响到这条线了。
-						this.lineSwitchRelationService.insert(lineId, ids[i]);
-						List<SwitchUpStream> upstreamSwitchs = this.cableSwitchService.getUpstreamSwitchs(ids[i]);
-
-						if (!CollectionUtils.isEmpty(upstreamSwitchs)) {
-							for (SwitchUpStream sus : upstreamSwitchs) {
-								this.lineSwitchRelationService.insert(lineId, sus.getSwitchId());
-							}
-						}
-					}
-				}
-			}
-		}
-		map.put("message", "保存成功!");
-		map.put("oc", 1);
-		return line;
+		return map;
 	}
+	/**
+	 * 修改名称
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping("/editText.do")
+	@ResponseBody
+	public Object editText(HttpServletRequest req) {
+		String switchId = req.getParameter("switchId");
+		String switchTitle = req.getParameter("switchTitle");
+		String svg = req.getParameter("svg");
+		Map<String, Object> map = new HashMap<String, Object>();
+//		try{
+			map =  circuitService.editText(switchId, switchTitle, svg, req);
+//		} catch (Exception e) {
+//			map.put("message", "操作有误，如有问题请联系管理员");
+//			map.put("oc", -1);
+//		}
+		return map;
+	}
+	/**
+	 * 添加开关
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping("/addSwitch.do")
+	@ResponseBody
+	public Object addSwitch(HttpServletRequest req) {
+		String switchId = req.getParameter("switchId");
+		String switchName = req.getParameter("switchName");
+		String lastSwitchId = req.getParameter("lastSwitchId");
+		String lastBranchSwitchId = req.getParameter("lastBranchSwitchId");
+		String nextSwitchId = req.getParameter("nextSwitchId");
+		String nextBranchSwitchId = req.getParameter("nextBranchSwitchId");
+		String lineId = req.getParameter("lineId");
+		String lineName = req.getParameter("lineName");
+		String parentLineId = req.getParameter("parentLineId");
+		String lastBranchLineId = req.getParameter("lastBranchLineId");
+		String svg = req.getParameter("svg");
+		Map<String, Object> map = new HashMap<String, Object>();
+//		try{
+			map =  circuitService.addSwitch(switchId, switchName, lastSwitchId, lastBranchSwitchId, nextSwitchId, nextBranchSwitchId, lineId, lineName, parentLineId, lastBranchLineId, svg, req);
+//		} catch (Exception e) {
+//			map.put("message", "操作有误，如有问题请联系管理员");
+//			map.put("oc", -1);
+//		}
+		return map;
+	}
+	/**
+	 * 删除线路
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping("/deleteLine.do")
+	@ResponseBody
+	public Object deleteLine(HttpServletRequest req) {
+		String lineId = req.getParameter("lineId");
+		String svg = req.getParameter("svg");
+		Map<String, Object> map = new HashMap<String, Object>();
+//		try{
+			map =  circuitService.deleteLine(lineId, svg, req);
+//		} catch (Exception e) {
+//			map.put("message", "操作有误，如有问题请联系管理员");
+//			map.put("oc", -1);
+//		}
+		return map;
+	}
+	/**
+	 * 删除开关
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping("/deleteSwitch.do")
+	@ResponseBody
+	public Object deleteSwitch(HttpServletRequest req) {
+		String switchId = req.getParameter("switchId");
+		String svg = req.getParameter("svg");
+		Map<String, Object> map = new HashMap<String, Object>();
+//		try{
+			map =  circuitService.deleteSwitch(switchId, svg, req);
+//		} catch (Exception e) {
+//			map.put("message", "操作有误，如有问题请联系管理员");
+//			map.put("oc", -1);
+//		}
+		return map;
+	}
+	
+	@Autowired
+	private CableDiagramService cableDiagramService;
+	@Autowired
+	private CircuitService circuitService;
 }

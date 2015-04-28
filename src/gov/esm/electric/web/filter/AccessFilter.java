@@ -57,8 +57,7 @@ public class AccessFilter implements Filter {
 					String path = request.getServletPath();
 					logger.info("context path is :" + path);
 					
-					/*if(!"/circuit/getMessage.do".equals(path)&&!"/circuit/removeMessage.do".equals(path)&&!"/report/interrupt-histories-excel.do".equals(path)
-							&&!"/report/interrupt-histories-search.do".equals(path)&&!"/settings/user/deleteUser.do".equals(path))
+					if(!"/monitor.do".equals(path))
 					{
 						boolean havePermission = this.hasPermission(path,
 								permissions);
@@ -67,15 +66,8 @@ public class AccessFilter implements Filter {
 							request.getRequestDispatcher("/login.do").forward(req,
 									resp);
 						}
-					}*/
-					boolean havePermission = this.hasPermission(path,
-							permissions);
-					if (!havePermission) {
-						
-						logger.info("you not have permission :" + path);
-						request.getRequestDispatcher("/login.do").forward(req,
-								resp);
 					}
+					
 				}
 			}
 		} else {

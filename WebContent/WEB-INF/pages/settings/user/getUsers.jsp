@@ -10,8 +10,9 @@
 <title>用户列表</title>
 </head>
 <body>
+<div style="padding: 10px">
 	<table id="userList" class="easyui-datagrid" title="用户列表" 
-		style="width: 100%; height: 370px"
+		style="width: 100%; height: 600px"
 		data-options="idField:'id',singleSelect:false,striped:true,rownumbers:true,checkOnSelect:true,
 		selectOnCheck:true,checkbox:true,toolbar:esm.settings.editUser.toolbar,
 		onClickRow: esm.settings.editUser.onClickRow,pagination:true,url:'/settings/user/getUsers.do',method:'post'">
@@ -41,19 +42,7 @@
 							}
 						}">角色</th>
 
-				<th
-					data-options="field:'statusId',width:100,align:'center',formatter:function(value,row){
-							return row.statusName;
-						},
-						editor:{
-							type:'combobox',
-							options:{
-								valueField:'id',
-								textField:'name',
-								method:'post',
-								url:'/settings/user/getUserStatus.do'
-							}
-						}">用户状态</th>
+				
 			</tr>
 		</thead>
 		<tbody>
@@ -69,5 +58,6 @@
 			</tr>
 		</tbody>
 	</table>
+	</div>
 </body>
 </html>

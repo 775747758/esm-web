@@ -5,7 +5,6 @@ import gov.esm.electric.domain.CableLine;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -88,5 +87,10 @@ public class CableLineDao {
 		temp.append(" ").append("'"+keyword+"%'");
 		System.out.println(temp.toString());
 		return jdbcTemplate.queryForList(temp.toString());
+	}
+	private static final String sql_deleteById = "delete from cable_line where id=?";
+
+	public int deleteWithId(String lineId) {
+		return this.jdbcTemplate.update(sql_deleteById, lineId);
 	}
 }
