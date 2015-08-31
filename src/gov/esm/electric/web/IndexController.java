@@ -22,7 +22,7 @@ public class IndexController {
 	
 	@RequestMapping("/monitor.do")
 	public String monitor(HttpServletRequest req){
-		req.getSession().setAttribute("cableDiagram", cableDiagramService.getRecentCableDiagram());
+		req.setAttribute("cableDiagram", cableDiagramService.getRecentCableDiagram());
 		return "/monitor";
 	}
 }

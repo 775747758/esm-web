@@ -12,22 +12,22 @@
 <body>
 <div style="padding: 10px">
 	<table id="userList" class="easyui-datagrid" title="用户列表" 
-		style="width: 100%; height: 600px"
+		style="width: 100%; height: 630px"
 		data-options="idField:'id',singleSelect:false,striped:true,rownumbers:true,checkOnSelect:true,
 		selectOnCheck:true,checkbox:true,toolbar:esm.settings.editUser.toolbar,
 		onClickRow: esm.settings.editUser.onClickRow,pagination:true,url:'/settings/user/getUsers.do',method:'post'">
 		<thead>
 			<tr>
 				<th data-options="field:'ck',checkbox:true" ></th>
-				<th data-options="field:'id',align:'center',width:80">用户编号</th>
+				<th data-options="field:'id',align:'center',width:80"><b>用户编号</b></th>
 				<th
-					data-options="field:'name',width:100,align:'center',editor:'text'">用户名</th>
+					data-options="field:'name',width:100,align:'center'"><b>用户名</b></th>
 				<th
-					data-options="field:'realName',width:150,align:'center',editor:'text'">用户姓名</th>
+					data-options="field:'realName',width:150,align:'center',editor:'text'"><b>用户姓名</b></th>
 				<th
-					data-options="field:'email',width:150,align:'center',editor:'text'">电子邮件</th>
+					data-options="field:'email',width:150,align:'center',editor:'text'"><b>电子邮件</b></th>
 				<th
-					data-options="field:'phone',width:100,align:'center',editor:'text'">手机号</th>
+					data-options="field:'phone',width:100,align:'center',editor:'text'"><b>手机号</b></th>
 				<th
 					data-options="field:'roleId',width:100,align:'center',formatter:function(value,row){
 							return row.roleName;
@@ -40,7 +40,7 @@
 								method:'get',
 								url:'/settings/role/roles.do'
 							}
-						}">角色</th>
+						}"><b>角色</b></th>
 
 				
 			</tr>

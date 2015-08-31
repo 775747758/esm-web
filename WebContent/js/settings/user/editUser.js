@@ -28,7 +28,7 @@ esm.settings.editUser.toolbar = [ {
 				success : function(data, status, xhr) {
 					var message = "";
 					if (data.check < 0) {
-						message = "数据不合法.错误码:" + data.check
+						message = "数据不合法"
 					} else if (data.success) {
 						message = "修改成功!";
 					} else {

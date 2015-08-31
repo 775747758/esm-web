@@ -6,36 +6,42 @@
 	</head>
 	<body>
 		<form id="addSwitchForm" action="">
-			<table>
-				<tr>
-					<td>开关编号：</td>
-					<td><input id="switchId" type="text" value="" class="easyui-validatebox" data-options="required:true" /><p/></td>
-				</tr>
-				<tr>
-					<td>开关名称：</td>
-					<td><input id="switchName" type="text" value="" class="easyui-validatebox" data-options="required:true" /><p/></td>
-				</tr>
-				<tr>
-					<td>上游开关：</td>
-					<td><input id="lastSwitchId" type="text" value="" class="easyui-validatebox" data-options="required:true" /><p/></td>
-				</tr>
-				<tr>
-					<td>上游分支开关：</td>
-					<td><input id="lastBranchSwitchId" type="text" value="" /></td>
-				</tr>
-				<tr>
-					<td>上游分支线路：</td>
-					<td><input id="lastBranchLineId" type="text" value="" /></td>
-				</tr>
-				<tr>
-					<td>下游开关：</td>
-					<td><input id="nextSwitchId" type="text" value="" /><p/></td>
-				</tr>
-				<tr>
-					<td>下游分支开关：</td>
-					<td><input id="nextBranchSwitchId" type="text" value="" /></td>
-				</tr>
-			</table>
+			<div style="padding: 10px;">
+				<table>
+					<tr>
+						<td>开关编号：</td>
+						<td><input class="textbox" id="switchId" type="text" value=""  data-options="required:true" /><p/></td>
+					</tr>
+					<tr>
+						<td>开关名称：</td>
+						<td><input class="textbox" id="switchName" type="text" value=""  data-options="required:true" /><p/></td>
+					</tr>
+					<tr>
+						<td>上游开关编号：</td>
+						<td><input class="textbox" id="lastSwitchId" type="text" value=""  data-options="required:true" /><p/></td>
+					</tr>
+					<tr>
+						<td>上游分支开关编号：</td>
+						<td><input class="textbox" id="lastBranchSwitchId" type="text" value="" /></td>
+					</tr>
+					<tr>
+						<td>上游分支线路编号：</td>
+						<td><input class="textbox" id="lastBranchLineId" type="text" value="" readonly="readonly" /></td>
+					</tr>
+					<tr>
+						<td>下游开关编号：</td>
+						<td><input class="textbox" id="nextSwitchId" type="text" value="" /><p/></td>
+					</tr>
+					<tr>
+						<td>下游分支开关编号：</td>
+						<td><input class="textbox" id="nextBranchSwitchId" type="text" value="" /></td>
+					</tr>
+					<tr>
+						<td>新开关与下游开关之间的线路编号：</td>
+						<td><input  class="textbox"  id="newBranchLineId" type="text" value="" readonly="readonly" /></td>
+					</tr>
+				</table>
+			</div>
 		</form>
 	</body>
 </html>

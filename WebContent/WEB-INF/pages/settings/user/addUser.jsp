@@ -11,22 +11,22 @@
 </head>
 <body>
 <div style="padding: 10px">
-	<table id="dg" class="easyui-datagrid" title="新增用户"
-		style="width: 100%; height:370px;"
+	<table id="dg" class="easyui-datagrid" title="添加用户"
+		style="width: 100%; height:630px;"
 		data-options="singleSelect:true,collapsible:false,onClickRow: esm.settings.addUser.onClickRow,toolbar:esm.settings.addUser.toolbar">
 		<thead>
 			<tr>
-				<th data-options="field:'id',width:80">用户编号</th>
-				<th data-options="field:'name',width:100" editor="{type:'validatebox',options:{validType:'username'}}">用户名</th>
+				<th data-options="field:'id',width:80,align:'center'"><b>用户编号</b></th>
+				<th data-options="field:'name',width:100,align:'center'" editor="{type:'validatebox',options:{validType:'username'}}"><b>用户名</b></th>
 				<th
-					data-options="field:'password',width:150,align:'right'" editor="{type:'validatebox',options:{validType:'username'}}">密码</th>
+					data-options="field:'password',width:150,align:'center'" editor="{type:'validatebox',options:{validType:'password'}}"><b>密码</b></th>
 				<th
-					data-options="field:'realName',width:150,align:'center',editor:'text'" editor="{type:'validatebox',options:{validType:'name'}}">用户姓名</th>
+					data-options="required:true,field:'realName',width:150,align:'center',editor:'text'" editor="{type:'validatebox',options:{validType:'name'}}"><b>用户姓名</b></th>
 				<th
-					data-options="field:'email',width:150,align:'right'"  editor="{type:'validatebox',options:{validType:'email'}}">电子邮件</th>
-				<th data-options="field:'phone',width:100"  editor="{type:'validatebox',options:{validType:'mobile'}}">手机号</th>
+					data-options="required:false,field:'email',width:150,align:'center'" editor="{type:'validatebox',options:{required:false,validType:'email'}}"><b>电子邮件</b></th>
+				<th data-options="required:false,field:'phone',width:100,align:'center'"  editor="{type:'validatebox',options:{required:false,validType:'mobile'}}"><b>手机号</b></th>
 				<th
-					data-options="field:'roleId',width:100,formatter:function(value,row){
+					data-options="field:'roleId',width:100,align:'center',formatter:function(value,row){
 							return row.roleId;
 						},
 						editor:{

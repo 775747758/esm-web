@@ -37,7 +37,7 @@ public class CableLineService {
 	}
 
 	@Transactional(propagation = Propagation.SUPPORTS)
-	public CableLine getCableLine(int id) {
+	public CableLine getCableLine(String id) {
 		return this.cableLineDao.getCableLine(id);
 	}
 
@@ -105,5 +105,9 @@ public class CableLineService {
 	public void deleteWithId(String lineId) {
 		cableLineDao.deleteWithId(lineId);
 		
+	}
+	
+	public List<CableLine> getAllLines() {
+		return cableLineDao.getAllLines();
 	}
 }

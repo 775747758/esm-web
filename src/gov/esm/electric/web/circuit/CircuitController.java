@@ -1,11 +1,12 @@
-
 package gov.esm.electric.web.circuit;
 
+import gov.esm.assistor.DataSource;
 import gov.esm.assistor.ListUtils;
 import gov.esm.electric.cache.SwitchCache;
 import gov.esm.electric.dao.SwitchOperationDao;
 import gov.esm.electric.domain.CableSwitch;
 import gov.esm.electric.domain.InterruptHistory;
+import gov.esm.electric.domain.Role;
 import gov.esm.electric.domain.SwitchDownStream;
 import gov.esm.electric.domain.SwitchOperation;
 import gov.esm.electric.domain.SwitchStream;
@@ -21,7 +22,6 @@ import gov.esm.electric.service.SwitchOperationService;
 import gov.esm.electric.web.Constant;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -83,8 +83,9 @@ public class CircuitController {
 						.getLinesByKeyword(keyword);
 				return list;
 			} else {
-				List<Map<String, Object>> list = cableSwitchService.getSwitchNameByKeyword(keyword);
-				System.out.println("最后"+list.size()+"ddd");
+				List<Map<String, Object>> list = cableSwitchService
+						.getSwitchNameByKeyword(keyword);
+				System.out.println("最后" + list.size() + "ddd");
 				return list;
 			}
 		}
@@ -111,7 +112,7 @@ public class CircuitController {
 		if (null != message || !"".equals(message)) {
 			json.setSuccess(true);
 		}
-
+		System.out.println("message:"+message);
 		json.setObj(message);
 		return json;
 	}
@@ -121,14 +122,23 @@ public class CircuitController {
 	public JsonBean removeMessage(HttpServletRequest request) {
 		JsonBean json = new JsonBean();
 		request.getSession().getServletContext().removeAttribute("msg");
-		request.getSession().invalidate();
+		//request.getSession().invalidate();
 		json.setSuccess(true);
 		return json;
 	}
 
 	@RequestMapping("/diagram.do")
 	public String diagram(HttpServletRequest req) {
-		req.getSession().setAttribute("cableDiagram", cableDiagramService.getRecentCableDiagram());
+		req.getSession().setAttribute("cableDiagram",
+				cableDiagramService.getRecentCableDiagram());
+		List<Role> roles = (List<Role>) req.getSession().getAttribute(
+				Constant.SESSION_KEY_ROLES);
+		System.out.println(roles.get(0).getId());
+		if (roles.get(0).getId() == 2) {
+			req.setAttribute("flag", "0");
+		} else {
+			req.setAttribute("flag", "1");
+		}
 		return "/circuit/diagram";
 	}
 
@@ -163,11 +173,14 @@ public class CircuitController {
 			@RequestParam(value = "switchId", defaultValue = "0") String switchId,
 			@RequestParam(value = "status") int status, HttpServletRequest req)
 			throws Exception {
-		
+
 		logger.info(switchId + "  " + status);
 		CableSwitch currentSwitch = cableSwitchService.getCableSwitch(switchId);
-		recordInterrupt(currentSwitch, status, req);
+		
+		
+		
 		if (currentSwitch.getType() == 4) {
+			recordInterrupt(currentSwitch, status, req);
 			List<SwitchStream> streams = this.cableSwitchService
 					.getStationStreamSwitchs(switchId);
 			return this.setStationSwitch(currentSwitch, streams, status);
@@ -175,6 +188,31 @@ public class CircuitController {
 			// step 1.得到switchId的所有上游开关集合
 			List<SwitchUpStream> upstreams = this.cableSwitchService
 					.getUpstreamSwitchs(switchId);
+			
+			if(currentSwitch.getType()!=DataSource.SWITCH_TYPE_WS&&currentSwitch.getType()!=DataSource.SWITCH_TYPE_STATION){
+				if(isupstreamHasUnUseOrReserve(currentSwitch, upstreams)){
+					Map<String, Object> result = new HashMap<String, Object>();
+					result.put("oc", -1);
+					result.put("tip", "上游有备用或者闲置的开关，不能操作！");
+					result.put("lines", null);
+					return result;
+				}
+				
+			}
+			
+			recordInterrupt(currentSwitch, status, req);
+			
+			if(currentSwitch.getType()==DataSource.SWITCH_TYPE_FIRST){
+				if(isupstreamHasOpen(currentSwitch, upstreams)){
+					Map<String, Object> result = new HashMap<String, Object>();
+					result.put("oc", 1);
+					result.put("tip", "");
+					result.put("lines", new HashSet<String>());
+					result.put("switchs", new ArrayList<String>());
+					this.cableSwitchService.updateStatus(status, currentSwitch.getId());
+					return result;
+				}
+			}
 
 			logger.info("step 1.上游开关集合");
 			logger.info(objectMapper.writeValueAsString(upstreams));
@@ -198,13 +236,8 @@ public class CircuitController {
 					logger.info("开闸:握手开关");
 					return this.openCommonSwitch(currentSwitch, upstreams,
 							downstreams);
-				} else if (currentSwitch.getType() == 1) {// 当前开关是变电站第一开关
-					logger.info("开闸:第一开关");
-					return this.openNormalSwitch(currentSwitch, upstreams,
-							downstreams);
-				} else if (currentSwitch.getType() == 2) {// 当前开关是普通开关
-					logger.info("开闸:普通开关");
-
+				} else if (currentSwitch.getType() == 1||currentSwitch.getType() == 2) {// 当前开关是变电站第一开关
+					
 					return this.openNormalSwitch(currentSwitch, upstreams,
 							downstreams);
 				}
@@ -234,8 +267,7 @@ public class CircuitController {
 						status, req);
 				if (currentSwitch.getType() == 1
 						|| currentSwitch.getType() == 2) {
-					return this.unUseOrReserve(currentSwitch, upstreams,
-							downstreams,status);
+					return unUseOrReserve(currentSwitch, upstreams, downstreams, status);
 				}
 
 			}
@@ -246,7 +278,20 @@ public class CircuitController {
 	}
 
 	private Object unUseOrReserve(CableSwitch currentSwitch,
-			List<SwitchUpStream> upstreams, List<SwitchDownStream> downstreams,int status) {
+			List<SwitchUpStream> upstreams, List<SwitchDownStream> downstreams,
+			int status) {
+		// 此开关所影响的开关
+		List<CableSwitch> switchs = switchInfluencedStreamService
+				.getSwitchsInfluenced(currentSwitch.getId());
+		List<String> switchsStr = new ArrayList<String>();
+		if (switchs != null) {
+
+			for (CableSwitch cableSwitch : switchs) {
+				this.cableSwitchService.updateStatus(14, cableSwitch.getId());
+				switchsStr.add(cableSwitch.getId());
+			}
+		}
+
 		// 拿到此开关影响的所有线
 		Set<String> lines = lineSwitchRelationService
 				.getLinesBySwitchId(currentSwitch.getId());
@@ -254,8 +299,14 @@ public class CircuitController {
 		result.put("oc", 1);
 		result.put("tip", "");
 		result.put("lines", lines);
+		if (status == 12) {
+			result.put("action", "UNUSE");
+		} else if (status == 13) {
+			result.put("action", "RESERVE");
+		}
+		result.put("switchs", switchsStr);
 		this.cableSwitchService.updateStatus(status, currentSwitch.getId());
-		this.cableLineService.updateLineStatus(status-6, lines);
+		this.cableLineService.updateLineStatus(status - 6, lines);
 		return result;
 	}
 
@@ -322,14 +373,14 @@ public class CircuitController {
 		for (SwitchDownStream item : downstreams) {
 			List<CableSwitch> switchs = this.getDownStreamSwitch(item);
 			for (CableSwitch s : switchs) {
-			System.out.println(s.getId());
-			if(s.getStatus()==12||s.getStatus()==13){
-				Set<String> set = lineSwitchRelationService
-						.getLinesBySwitchId(s.getId());
-				lines.removeAll(set);
-			}
+				System.out.println(s.getId());
+				if (s.getStatus() == 12 || s.getStatus() == 13) {
+					Set<String> set = lineSwitchRelationService
+							.getLinesBySwitchId(s.getId());
+					lines.removeAll(set);
+				}
 				if (s.getType() == 2 && s.getStatus() == 10) {
-				
+
 					Set<String> set = lineSwitchRelationService
 							.getLinesBySwitchId(s.getId());
 					lines.removeAll(set);
@@ -344,12 +395,14 @@ public class CircuitController {
 
 		// 获取开关所影响的开关id集合
 		List<String> switchsStr = new ArrayList<String>();
-		List<CableSwitch> switchs = switchInfluencedStreamService.getSwitchsInfluenced(currentSwitch.getId());
-		if(switchs!=null){
+		List<CableSwitch> switchs = switchInfluencedStreamService
+				.getSwitchsInfluenced(currentSwitch.getId());
+		if (switchs != null) {
 
 			for (CableSwitch cableSwitch : switchs) {
-				if(cableSwitch.getStatus()!=10){
-					this.cableSwitchService.updateStatus(14, cableSwitch.getId());
+				if (cableSwitch.getStatus() != 10) {
+					this.cableSwitchService.updateStatus(14,
+							cableSwitch.getId());
 					switchsStr.add(cableSwitch.getId());
 				}
 			}
@@ -374,7 +427,35 @@ public class CircuitController {
 	 */
 	private Object openCommonSwitch(CableSwitch currentSwitch,
 			List<SwitchUpStream> upstreams, List<SwitchDownStream> downstreams) {
-
+		Map<String, Object> result = new HashMap<String, Object>();
+		Set<String> newlines = new HashSet<String>();
+		if ("WS2910".equals(currentSwitch.getId())) {
+			System.out.print("是握手2910");
+			CableSwitch cs2911 = cableSwitchService.getCableSwitch("2911");
+			CableSwitch cs2921 = cableSwitchService.getCableSwitch("2921");
+			System.out.print("cs2911：" + cs2911.getStatus() + "cs2921:"
+					+ cs2921.getStatus());
+			if (cs2911.getStatus() == 10 && cs2921.getStatus() == 11) {
+				newlines.addAll(lineSwitchRelationService
+						.getLinesBySwitchId("2911"));
+				result.put("oc", 1);
+				result.put("tip", "");
+				result.put("lines", newlines);
+				this.cableSwitchService.updateStatus(10, currentSwitch.getId());
+				this.cableLineService.updateLineStatus(5, newlines);
+				return result;
+			}
+			if (cs2911.getStatus() == 11 && cs2921.getStatus() == 10) {
+				newlines.addAll(lineSwitchRelationService
+						.getLinesBySwitchId("2921"));
+				result.put("oc", 1);
+				result.put("tip", "");
+				result.put("lines", newlines);
+				this.cableSwitchService.updateStatus(10, currentSwitch.getId());
+				this.cableLineService.updateLineStatus(5, newlines);
+				return result;
+			}
+		}
 		Set<String> lines = new HashSet<String>();
 		for (SwitchDownStream item : downstreams) {
 			List<CableSwitch> switchs = this.getDownStreamSwitch(item);
@@ -394,7 +475,6 @@ public class CircuitController {
 					i++;
 
 					if (i == 1) {
-						listInfluenced = switchInfluencedStreamService.getSwitchsInfluenced(s.getId());
 						fistOpenSwitchId = s.getId();
 						index = l;
 					}
@@ -403,20 +483,13 @@ public class CircuitController {
 						secondOpenSwitchId = s.getId();
 					}
 				}
-				if (l > index) {
-
-					if (listInfluenced != null) {
-						System.out.println("第一个断开的开关后面的开关：" + s.getId());
-						if (!listInfluenced.contains(s)) {
-							System.out
-									.println("第一个断开的开关所影响的开关不包含：" + s.getId());
-							isContains = false;
-						}
-					}
-
-				}
-
 			}
+			if(isDownStreamContain(fistOpenSwitchId,currentSwitch.getId())){
+				isContains=false;//流入
+			}else{
+				isContains=true;//流出
+			}
+			
 			boolean isUpStreamHaveOpenedSwitch = false;
 			String upstreamFirstOpenedSwitchid = null;
 			if (i == 0) {
@@ -431,9 +504,10 @@ public class CircuitController {
 						}
 						CableSwitch cs = this.cableSwitchService
 								.getCableSwitch(us[k]);
-						//修改：
-						if (cs.getStatus() == 10) {
+						// 修改：如果上游出现握手是断开的，排除掉
+						if (cs.getStatus() == 10&&cs.getType()!=DataSource.SWITCH_TYPE_WS) {
 							upstreamFirstOpenedSwitchid = cs.getId();
+							System.out.println("上游断开的开关：："+cs.getId());
 							isUpStreamHaveOpenedSwitch = true;
 						}
 					}
@@ -473,9 +547,9 @@ public class CircuitController {
 			}
 
 		}
-		
+
 		System.out.println("闭合一个握手所影响的线路：" + lines.toString());
-		Map<String, Object> result = new HashMap<String, Object>();
+
 		result.put("oc", 1);
 		result.put("tip", "");
 		result.put("action", "OPEN");
@@ -483,6 +557,7 @@ public class CircuitController {
 		this.cableSwitchService.updateStatus(10, currentSwitch.getId());
 		this.cableLineService.updateLineStatus(5, lines);
 		return result;
+
 	}
 
 	/**
@@ -512,7 +587,8 @@ public class CircuitController {
 							.getUpstreamSwitchs(s.getId());
 					for (SwitchUpStream up : ups) {
 						String[] us = up.getUpstream().split(",");
-						CableSwitch last = cableSwitchService.getCableSwitch(us[us.length - 1]);
+						CableSwitch last = cableSwitchService
+								.getCableSwitch(us[us.length - 1]);
 						if (last.getId().equals(currentSwitch.getId())) {
 							continue;
 						} /*
@@ -564,22 +640,37 @@ public class CircuitController {
 	private Object closeNormalSwitch(CableSwitch currentSwitch,
 			List<SwitchUpStream> upstreams, List<SwitchDownStream> downstreams) {
 
+		Map<String, Object> result = new HashMap<String, Object>();
+		// 1.上游是否有电
+		boolean isupstreamHasOpen = this.isupstreamHasOpen(currentSwitch,
+				upstreams);
+		System.out.println("上游是否有断开的开关：："+isupstreamHasOpen);
+		if (isupstreamHasOpen) {
+			result.put("oc", 1);
+			result.put("action", "CLOSE");
+			result.put("tip", "");
+			result.put("lines", new HashSet<String>());
+			result.put("switchs", new ArrayList<String>());
+			this.cableSwitchService.updateStatus(11, currentSwitch.getId());
+			return result;
+		}
+
 		Set<String> lines = lineSwitchRelationService
 				.getLinesBySwitchId(currentSwitch.getId());
-		List<CableSwitch> switchsInfluenced = switchInfluencedStreamService.getSwitchsInfluenced(currentSwitch.getId());
-		List<CableSwitch> copy =null;
-		if(switchsInfluenced==null){
-			copy=new ArrayList<CableSwitch>();
+		List<CableSwitch> switchsInfluenced = switchInfluencedStreamService
+				.getSwitchsInfluenced(currentSwitch.getId());
+		List<CableSwitch> copy = null;
+		if (switchsInfluenced == null) {
+			copy = new ArrayList<CableSwitch>();
+		} else {
+			copy = new ArrayList<CableSwitch>(switchsInfluenced);
 		}
-		else{
-			copy=new ArrayList<CableSwitch>(switchsInfluenced);
-		}
-		 
+
 		for (SwitchDownStream item : downstreams) {
 			List<CableSwitch> switchs = this.getDownStreamSwitch(item);
 
 			for (CableSwitch s : switchs) {
-				if(s.getStatus()==12||s.getStatus()==13){
+				if (s.getStatus() == 12 || s.getStatus() == 13) {
 					Set<String> set = lineSwitchRelationService
 							.getLinesBySwitchId(s.getId());
 					lines.removeAll(set);
@@ -590,39 +681,40 @@ public class CircuitController {
 					// 去除那些已经断开的开关所影响的线路
 					lines.removeAll(set);
 					// 去除那些已经断开的开关所影响的开关
-					List<CableSwitch> switchsInfluencedFirst = switchInfluencedStreamService.getSwitchsInfluenced(s.getId());
-					if(copy!=null&&switchsInfluencedFirst!=null){
+					List<CableSwitch> switchsInfluencedFirst = switchInfluencedStreamService
+							.getSwitchsInfluenced(s.getId());
+					System.out.println("下游：断开的普通开关："+s.getId()+"<<"+switchsInfluencedFirst.size());
+					if (copy != null && switchsInfluencedFirst != null) {
 						copy.removeAll(switchsInfluencedFirst);
 					}
-					
+
 				}
 
 			}
 
 		}
 
-		if(switchsInfluenced!=null){
+		if (switchsInfluenced != null) {
 			for (CableSwitch cableSwitch : switchsInfluenced) {
 				if (cableSwitch.getStatus() != 14) {
-					if(copy!=null){
+					if (copy != null) {
 						copy.remove(cableSwitch);
 					}
 				}
 			}
 		}
-		
 
 		// 获取开关所影响的开关id集合
 		List<String> switchsStr = new ArrayList<String>();
-		if(copy!=null){
+		if (copy != null) {
 			for (CableSwitch cableSwitch : copy) {
 				this.cableSwitchService.updateStatus(11, cableSwitch.getId());
 				switchsStr.add(cableSwitch.getId());
 			}
 		}
-		
+
 		System.out.println(switchsStr.toString());
-		Map<String, Object> result = new HashMap<String, Object>();
+
 		result.put("oc", 1);
 		result.put("action", "CLOSE");
 		result.put("tip", "");
@@ -641,7 +733,29 @@ public class CircuitController {
 	private Object closeCommonSwitch(CableSwitch currentSwitch,
 			List<SwitchUpStream> upstreams, List<SwitchDownStream> downstreams) {
 		Map<String, Object> result = new HashMap<String, Object>();
+		Set<String> newlines = new HashSet<String>();
+		if ("WS2910".equals(currentSwitch.getId())) {
+			System.out.print("是握手2910");
+			CableSwitch cs2911 = cableSwitchService.getCableSwitch("2911");
+			CableSwitch cs2921 = cableSwitchService.getCableSwitch("2921");
+			System.out.print("cs2911：" + cs2911.getStatus() + "cs2921:"
+					+ cs2921.getStatus());
+			if ((cs2911.getStatus() == 10 && cs2921.getStatus() == 11)
+					|| (cs2911.getStatus() == 11 && cs2921.getStatus() == 10)) {
+				newlines.addAll(lineSwitchRelationService
+						.getLinesBySwitchId("2911"));
+				newlines.addAll(lineSwitchRelationService
+						.getLinesBySwitchId("2921"));
+				result.put("oc", 1);
+				result.put("tip", "");
+				result.put("lines", newlines);
+				this.cableSwitchService.updateStatus(11, currentSwitch.getId());
+				this.cableLineService.updateLineStatus(4, newlines);
+				return result;
+			}
+		}
 		int state = isCommonSwitchOk(currentSwitch, upstreams);
+		System.out.println("state"+state);
 		if (state == 1) {
 			Set<String> lines = lineSwitchRelationService
 					.getLinesBySwitchId(currentSwitch.getId());
@@ -651,8 +765,11 @@ public class CircuitController {
 						+ switchs.get(switchs.size() - 1).getId());
 				String fistOpenSwitchId = null;
 				String secondOpenSwitchId = null;
+				//断开开关数量
 				int i = 0;
+				//switchs的顺序
 				int l = 0;
+				//记录断开的开关位置
 				int index = 0;
 				boolean isContains = true;
 				List<CableSwitch> listInfluenced = null;
@@ -662,45 +779,87 @@ public class CircuitController {
 						i++;
 
 						if (i == 1) {
-							listInfluenced = switchInfluencedStreamService.getSwitchsInfluenced(s.getId());
+							/*//listInfluenced = cableSwitchService.getDownStreamSwitchs(s.getId());
+							System.out.println("MMMM:断开的开关id：" + s.getId()+"size::"+listInfluenced.size());
+							for(int h=0;h<listInfluenced.size();h++){
+								System.out.println("下游开关集合listInfluenced::" + listInfluenced.get(h).getId());
+							}*/
 							fistOpenSwitchId = s.getId();
 							index = l;
 						}
-
 						if (i == 2) {
 							secondOpenSwitchId = s.getId();
 						}
 					}
+					
+				}
+				/*if(listInfluenced!=null){
+					if(listInfluenced.contains(currentSwitch)){
+						isContains=false;//流入
+					}else{
+						isContains=true;//流出
+					}
+				}*/
+				if(isDownStreamContain(fistOpenSwitchId,currentSwitch.getId())){
+					System.out.println("第一个断开的开关和握手开关"+fistOpenSwitchId+"::"+currentSwitch.getId());
+					isContains=false;//流入
+				}else{
+					System.out.println("第一个断开的开关和握手开关"+fistOpenSwitchId+"::"+currentSwitch.getId());
+					isContains=true;//流出
+				}
+					
+					/*//循环到第一个断开的开关之后
 					if (l > index) {
 						System.out.println("第一个断开的开关后面的开关：" + s.getId());
 						if (listInfluenced != null) {
 							if (!listInfluenced.contains(s)) {
-								System.out.println("第一个断开的开关所影响的开关不包含："
+								
+								System.out.println("isContains = false:第一个断开的开关所影响的开关不包含："
 										+ s.getId());
 								isContains = false;
 							}
 						}
+						//switchs最后一个开关(2158和2143之间添加开关有用)
 						if (l == switchs.size() - 1) {
-							isContains = false;
+							System.out.println("isContains = false:未知原因");
+							if (listInfluenced != null) {
+								if (!listInfluenced.contains(s)) {
+									
+									System.out.println("isContains = false:第一个断开的开关所影响的开关不包含："
+											+ s.getId());
+									isContains = false;
+								}
+							}else{
+								isContains = true;
+							}
+							
+							
 						}
 					}
 
 				}
+				// 当此线路只有一个开关时
+				if (l == 1) {
+					System.out.println("isContains = false:此线路只有一个开关");
+					isContains = false;
+				}*/
 				if (i == 0) {
 					System.out.println("下游开关集合中没有断开的开关");
 					boolean isUpStreamHaveOpenedSwitch = false;
 					List<SwitchUpStream> listUp = this.cableSwitchService
 							.getUpstreamSwitchs(switchs.get(0).getId());
+					System.out.println("?????::"+switchs.get(0).getId());
 					for (SwitchUpStream up : listUp) {
 						String[] us = up.getUpstream().split(",");
 						for (int k = 0; k < us.length; k++) {
-							if (us[k].equals(currentSwitch.getId())) {
+							
+							/*if (us[k].equals(currentSwitch.getId())) {
 								break;
-							}
+							}*/
 							CableSwitch cs = this.cableSwitchService
 									.getCableSwitch(us[k]);
-							
-							//修改
+							System.out.println("?????"+us[k]+"<>"+cs.getStatus());
+							// 修改
 							if (cs.getStatus() == 10) {
 								isUpStreamHaveOpenedSwitch = true;
 							}
@@ -772,6 +931,8 @@ public class CircuitController {
 	private Object setStationSwitch(CableSwitch currentSwitch,
 			List<SwitchStream> streams, int status) {
 		Set<String> lines = new HashSet<String>();
+		// 获取开关所影响的开关id集合
+		List<String> switchsStr = new ArrayList<String>();
 		for (int i = 0; i < streams.size(); i++) {
 			String[] switchs = streams.get(i).getSwitchStream().split(",");
 			for (int j = 0; j < switchs.length; j++) {
@@ -782,16 +943,40 @@ public class CircuitController {
 					Set<String> singleLines = lineSwitchRelationService
 							.getLinesBySwitchId(s.getId());
 					lines.addAll(singleLines);
+					// 变电站所影响的开关
+					List<CableSwitch> switchsInfluenced = switchInfluencedStreamService
+							.getSwitchsInfluencedNO(s.getId());
+					switchsStr.add(s.getId());
+					this.cableSwitchService.updateStatus(status, s.getId());
+					if (switchsInfluenced != null) {
+						for (CableSwitch cableSwitch : switchsInfluenced) {
+							this.cableSwitchService.updateStatus(status,
+									cableSwitch.getId());
+							switchsStr.add(cableSwitch.getId());
+						}
+					}
 				}
 			}
 		}
+
 		System.out.println("线路：" + lines.toString());
 		Map<String, Object> result = new HashMap<String, Object>();
 		result.put("oc", 1);
 		result.put("tip", "操作成功");
 		result.put("lines", lines);
+		if (status == 10) {
+			result.put("action", "DEBUG");
+		} else if (status == 11) {
+			result.put("action", "CLOSE");
+		} else if (status == 12) {
+			result.put("action", "UNUSE");
+		} else if (status == 13) {
+			result.put("action", "RESERVE");
+		}
+		result.put("switchs", switchsStr);
+
 		// this.cableSwitchService.updateStatus(11, currentSwitch.getId());
-		System.out.println("状态：" + status);
+		System.out.println("点击变电站状态：" + status + ":::" + switchsStr);
 		int LineStatus = 0;
 		if (status == 10) {
 			LineStatus = 5;
@@ -805,6 +990,7 @@ public class CircuitController {
 		this.cableSwitchService.setStationStatus(currentSwitch.getId(), status);
 		this.cableLineService.updateLineStatus(LineStatus, lines);
 		return result;
+
 	}
 
 	/**
@@ -816,20 +1002,119 @@ public class CircuitController {
 	 *            上游所有开关集合
 	 * @return
 	 */
-	private boolean upstreamHasCurrent(CableSwitch cableSwitch,
-			SwitchUpStream upstreams) {
+	private boolean isupstreamHasOpen(CableSwitch cableSwitch,
+			List<SwitchUpStream> upstreams) {
 		if (cableSwitch.getType() == 1) {
-			return true;
-		}
-		String[] switchIds = upstreams.getUpstream().split(",");
-		for (int i = 0; i < switchIds.length; i++) {
-			CableSwitch s = this.cableSwitchService
-					.getCableSwitch(switchIds[i]);
-			if (s.getStatus() == 10) {
+			int state = getStationState(cableSwitch);
+			if (state == DataSource.STATUS_SWITCH_OPEN) {
+				return true;
+			} else {
 				return false;
 			}
 		}
-		return true;
+		for (SwitchUpStream upstream : upstreams) {
+			if (upstream.getUpstream().contains("WS")) {
+				continue;
+			}
+
+			String[] switchIds = upstream.getUpstream().split(",");
+			for (int i = 0; i < switchIds.length; i++) {
+				CableSwitch s = this.cableSwitchService
+						.getCableSwitch(switchIds[i]);
+				if (s.getStatus() == 10 || s.getStatus() == 12
+						|| s.getStatus() == 13) {
+					return true;
+				}
+			}
+
+		}
+		return false;
+	}
+
+	/**
+	 * 分析上游开关是否有备用或者闲置的开关
+	 * 
+	 * @param cableSwitch
+	 *            当前开关
+	 * @param upstreams
+	 *            上游所有开关集合
+	 * @return
+	 */
+	private boolean isupstreamHasUnUseOrReserve(CableSwitch cableSwitch,
+			List<SwitchUpStream> upstreams) {
+		if (cableSwitch.getType() == 1) {
+			int state = getStationState(cableSwitch);
+			if (state == DataSource.STATUS_SWITCH_RESERVE
+					|| state == DataSource.STATUS_SWITCH_UNUSE) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		for (SwitchUpStream upstream : upstreams) {
+			if (upstream.getUpstream().contains("WS")) {
+				continue;
+			}
+
+			String[] switchIds = upstream.getUpstream().split(",");
+			for (int i = 0; i < switchIds.length; i++) {
+				CableSwitch s = this.cableSwitchService
+						.getCableSwitch(switchIds[i]);
+				if (s.getStatus() == 12 || s.getStatus() == 13) {
+					return true;
+				}
+			}
+
+		}
+		return false;
+	}
+	
+	
+	/*
+	 * 暂时只能判断刀闸所在变电站,返回-1说明开关不是刀闸
+	 */
+	private int getStationState(CableSwitch cableSwitch) {
+		if (cableSwitch.getType() == DataSource.SWITCH_TYPE_FIRST) {
+			String stationId = cableSwitch.getId().substring(0, 2) + "B";
+			CableSwitch s = this.cableSwitchService.getCableSwitch(stationId);
+			return s.getStatus();
+		}
+		return -1;
+
+	}
+
+	/*
+	 * 不考虑逻辑所影响的线路和开关
+	 */
+	private Object setInfluencedLinesAndSwitch(CableSwitch currentSwitch,
+			List<SwitchUpStream> upstreams, List<SwitchDownStream> downstreams,
+			String action, int LineState, int switchState) {
+
+		Set<String> lines = lineSwitchRelationService
+				.getLinesBySwitchId(currentSwitch.getId());
+
+		// 获取开关所影响的开关id集合
+		List<String> switchsStr = new ArrayList<String>();
+		List<CableSwitch> switchs = switchInfluencedStreamService
+				.getSwitchsInfluenced(currentSwitch.getId());
+		if (switchs != null) {
+
+			for (CableSwitch cableSwitch : switchs) {
+				this.cableSwitchService.updateStatus(14, cableSwitch.getId());
+				switchsStr.add(cableSwitch.getId());
+			}
+		}
+		System.out.println(switchsStr.toString());
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("oc", 1);
+		result.put("tip", "");
+		result.put("lines", lines);
+		result.put("switchs", switchsStr);
+		result.put("action", action);
+		this.cableSwitchService
+				.updateStatus(switchState, currentSwitch.getId());
+		this.cableLineService.updateLineStatus(LineState, lines);
+		return result;
 	}
 
 	/**
@@ -875,7 +1160,8 @@ public class CircuitController {
 		List<Map<String, Object>> switchs = cableSwitchService.getAll();
 		map.put("switchs", switchs);
 		map.put("message", "开关状态: 10 表示断开,11表示闭合; 线路状态:4表示有电，５表示没电，６表示闲置，７表示备用");
-
+		map.put("cableDiagram", cableDiagramService.getRecentCableDiagram()
+				.getHtml());
 		return map;
 	}
 
@@ -916,25 +1202,26 @@ public class CircuitController {
 	 * 获取一个开关所影响的开关
 	 */
 	public List<CableSwitch> getSwitchsInfluenced(CableSwitch cableSwitch,
-		List<SwitchUpStream> upstreams, List<SwitchDownStream> downstreams) {
-		String idString=cableSwitch.getId();
-		//改动：针对于紧挨着握手的开关:21DZ201在我握手旁边
-		if(idString.equals("21DZ201")){
+			List<SwitchUpStream> upstreams, List<SwitchDownStream> downstreams) {
+		String idString = cableSwitch.getId();
+		// 改动：针对于紧挨着握手的开关:21DZ201在我握手旁边
+		if (idString.equals("21DZ201")) {
 			return null;
 		}
-		if(!idString.equals("22DZ201_2")){
-			if(idString.split("_").length>1){
-				if(idString.split("_")[1].equals("1")||idString.split("_")[1].equals("2")){
+		if (!idString.equals("22DZ201_2")) {
+			if (idString.split("_").length > 1) {
+				if (idString.split("_")[1].equals("1")
+						|| idString.split("_")[1].equals("2")) {
 					return null;
 				}
 			}
-			
+
 		}
 		List<CableSwitch> copy = new ArrayList<CableSwitch>();
 		List<SwitchDownStream> copyDownStreams = new ArrayList<SwitchDownStream>(
 				downstreams);
-		SwitchDownStream haveWSDownStream=null; 
-		if(copyDownStreams.size()>1){
+		SwitchDownStream haveWSDownStream = null;
+		if (copyDownStreams.size() > 1) {
 			for (int i = 0; i < downstreams.size(); i++) {
 				for (int j = 0; j < upstreams.size(); j++) {
 					if (downstreams.get(i).getDownstream()
@@ -944,79 +1231,78 @@ public class CircuitController {
 						copyDownStreams.remove(downstreams.get(i));
 					}
 				}
-				//如果下游有握手记录下来，以备后面使用
-				if(downstreams.get(i).getDownstream().contains("WS")){
-					haveWSDownStream=downstreams.get(i);
+				// 如果下游有握手记录下来，以备后面使用
+				if (downstreams.get(i).getDownstream().contains("WS")) {
+					haveWSDownStream = downstreams.get(i);
 				}
 			}
 		}
-		//如果最后下游剩下的线路中没有WS开关，那么我们把握手开关加进去
-		boolean isHaveWS=false;
+		// 如果最后下游剩下的线路中没有WS开关，那么我们把握手开关加进去
+		boolean isHaveWS = false;
 		for (SwitchDownStream item : copyDownStreams) {
-			if(item.getDownstream().contains("WS")){
-				isHaveWS=true;
+			if (item.getDownstream().contains("WS")) {
+				isHaveWS = true;
 			}
 		}
-		if(!isHaveWS){
-			System.out.println("警告：：没有握手开关："+cableSwitch.getId());
-			SwitchDownStream downStream=new SwitchDownStream();
-			String[] ary=haveWSDownStream.getDownstream().split(","+cableSwitch.getId()+",");
-			if(ary.length>1){
-				System.out.println("警告：：带有本身："+ary[1]);
+		if (!isHaveWS) {
+			System.out.println("警告：：没有握手开关：" + cableSwitch.getId());
+			SwitchDownStream downStream = new SwitchDownStream();
+			String[] ary = haveWSDownStream.getDownstream().split(
+					"," + cableSwitch.getId() + ",");
+			if (ary.length > 1) {
+				System.out.println("警告：：带有本身：" + ary[1]);
 				downStream.setDownstream(ary[1]);
 				copyDownStreams.add(downStream);
-			}
-			else{
-				System.out.println("警告：：不带有本身："+cableSwitch.getId());
-				//copyDownStreams.clear();
+			} else {
+				System.out.println("警告：：不带有本身：" + cableSwitch.getId());
+				// copyDownStreams.clear();
 				copyDownStreams.add(haveWSDownStream);
 			}
-			
+
 		}
-		
+
 		for (SwitchDownStream item : copyDownStreams) {
 			boolean isContinue = false;
 			List<CableSwitch> switchs = this.getDownStreamSwitch(item);
 			// 去除带有握手开关stream中之后的开关
 			for (CableSwitch s : switchs) {
 				if (s.getType() == 3) {
-					System.out.println("是握手开关：所以跳过去"+s.getId());
+					System.out.println("是握手开关：所以跳过去" + s.getId());
 					isContinue = true;
 					break;
-				}
-				else{
-					//添加有握手开关的线路之前的开关
+				} else {
+					// 添加有握手开关的线路之前的开关
 					copy.add(s);
-					System.out.println("添加不是握手的开关："+s.getId());
+					System.out.println("添加不是握手的开关：" + s.getId());
 				}
 			}
 			if (isContinue) {
 				continue;
 			}
-			//测试
-			for(CableSwitch s : switchs){
-				System.out.println("中间添加"+s.getId());
+			// 测试
+			for (CableSwitch s : switchs) {
+				System.out.println("中间添加" + s.getId());
 			}
 			copy.addAll(switchs);
 			for (CableSwitch s : switchs) {
 				if (s.getType() == 2 && s.getStatus() == 10) {
-					System.out.println("排除普通并且是断开的开关："+s.getId());
+					System.out.println("排除普通并且是断开的开关：" + s.getId());
 					copy.remove(s);
 				}
-				
+
 			}
 		}
-		
+
 		ListUtils.removeDuplicate(copy);
-		//测试
-		Iterator<CableSwitch> iterator = copy.iterator(); 
-		
-		while (iterator.hasNext()) {  
-			CableSwitch  s= iterator.next();  
-			if(s.getStatus()==12||s.getStatus()==13){
+		// 测试
+		Iterator<CableSwitch> iterator = copy.iterator();
+
+		while (iterator.hasNext()) {
+			CableSwitch s = iterator.next();
+			if (s.getStatus() == 12 || s.getStatus() == 13) {
 				iterator.remove();
 			}
-	    }
+		}
 		return copy;
 	}
 
@@ -1034,6 +1320,7 @@ public class CircuitController {
 			String[] us = up.getUpstream().split(",");
 			for (int k = 0; k < us.length; k++) {
 				CableSwitch cs = this.cableSwitchService.getCableSwitch(us[k]);
+				System.out.println("StreamHaveOpenedSwitch"+cs.getName()+":::"+cs.getStatus());
 				if (cs.getStatus() == 10) {
 					isStreamHaveOpenedSwitch = true;
 				}
@@ -1043,6 +1330,7 @@ public class CircuitController {
 			} else {
 				list.add(0);
 			}
+			System.out.println("isStreamHaveOpenedSwitch"+isStreamHaveOpenedSwitch);
 		}
 		if (list.size() > 2) {
 			System.out.println("错误：：：握手开关上游多余两条");
@@ -1058,6 +1346,15 @@ public class CircuitController {
 			}
 		}
 	}
+	
+	
+	public boolean isDownStreamContain(String oId,String wId){
+		for(SwitchDownStream downStream:cableSwitchService.getDownStreamSwitchs(oId)){
+			if(downStream.getDownstream().contains(wId)){
+				return true;
+			}
+		}
+		return false;
+	}
 
 }
-

@@ -5,6 +5,9 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<style>.datagrid-cell-rownumber{ width:50px; text-align:center; margin:0px; padding:3px 0px; color:#000; } .datagrid-header-rownumber{ width:50px; text-align:center; margin:0px; padding:3px 0px; } </style>
+
 <script type="text/javascript">
 	Date.prototype.format = function(format) {
 		if (!format) {
@@ -33,32 +36,35 @@
 		return format;
 	};
 	
+	if("${flag}"=="1") {
+		//断电报表
+		toolbar = [ {
+			text : '按搜索条件导出报表',
+			handler : function() {
 	
-	//断电报表
-	toolbar = [ {
-		text : '按搜索条件导出报表',
-		handler : function() {
-
-			
-			var switchID = $("input[name='switchID']").val();
-			var operatorName = $("input[name='operator']").val();
-			var operate = $("input[name='operate']").val();
-			var beginDate = $("#beginDate").datebox("getValue");
-			var endDate = $("#endDate").datebox("getValue");
-			
-			
-			var url="report/interrupt-histories-excel.do"+"?switchId="+switchID+"&operatorName="+operatorName+"&operate="+operate+"&beginDate="
-			+beginDate+"&endDate="+endDate;
-			location.href=url;
-			 
-		}
-	} , {
-		text : '导出今日报表',
-		handler : function() {
-			 location.href="report/today_interrupt-histories-excel.do";
-		}
-	} ];
-	
+				
+				var switchID = $("input[name='switchID']").val();
+				var operatorName = $("input[name='operator']").val();
+				var operate = $("input[name='operate']").val();
+				var beginDate = $("#beginDate").datebox("getValue");
+				var endDate = $("#endDate").datebox("getValue");
+				
+				
+				var url="report/interrupt-histories-excel.do"+"?switchId="+switchID+"&operatorName="+operatorName+"&operate="+operate+"&beginDate="
+				+beginDate+"&endDate="+endDate;
+				location.href=url;
+				 
+			}
+		} , {
+			text : '导出今日报表',
+			handler : function() {
+				 location.href="report/today_interrupt-histories-excel.do";
+			}
+		} ];
+	} 
+	else{
+		toolbar = [ ];
+	}
 	
 	//data-options="toolbar:toolbar,rownumbers:true,singleSelect:true,pagination:true,url:'/report/interrupt-histories.do',method:'post'">
 	$(function(){
@@ -88,10 +94,10 @@
 					singleSelect:true,
 					pagination:true, 
 					columns:[[
-					    {field:'switchName',align:'center',width:160},
-					    {field:'interruptTime',width:200,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');}},
-					    {field:'operate',width:150,align:'center'},
-					    {field:'operatorName',width:150,align:'center'},
+					    {field:'switchName',align:'center',width:160,title:"开关"},
+					    {field:'interruptTime',width:200,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');},title:"时间"},
+					    {field:'operate',width:150,align:'center',title:"当前状态"},
+					    {field:'operatorName',width:150,align:'center',title:"操作员姓名"},
 					]]
 				}); 
 			}
@@ -124,11 +130,15 @@
    &nbsp;
       操作类型：
       <select id="cc" class="easyui-combobox" name="operate" style="width:100px;" data-options="required:true">
-      <option value="2">全部</option>
-      <option value="闭合">闭合</option>
-      <option value="断开">断开</option>
-      <option value="闲置">闲置</option>
-      <option value="备用">备用</option>
+      <option value="0">全部</option>
+      <option value="1">闭合</option>
+      <option value="2">断开</option>
+      <option value="3">闲置</option>
+      <option value="4">备用</option>
+      <option value="5">添加开关</option>
+      <option value="6">删除开关</option>
+      <option value="7">添加线路</option>
+      <option value="8">删除线路</option>
      </select>
         &nbsp;
         开始时间：
@@ -140,15 +150,15 @@
     <a  id="searchBt"  onclick="search()" style="width:60px;"  class="easyui-linkbutton">搜索</a>
     </div>
 
-	<table id="histories" class="easyui-datagrid" title="断电记录"
-		style="width: 100%; height: 600px"
+	<table id="histories" class="easyui-datagrid" title="运行方式报表"
+		style="width: 100%; height: 630px"
 		data-options="toolbar:toolbar,rownumbers:true,singleSelect:true,pagination:true,url:'/report/interrupt-histories.do',method:'post'">
 		<thead>
 			<tr>
-				<th data-options="field:'switchName',align:'center',width:160">开关名称</th>
-				<th data-options="field:'interruptTime',width:200,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');}">时间</th>
-				<th data-options="field:'operate',width:150,align:'center'">当前状态</th>
-				<th data-options="field:'operatorName',width:150,align:'center'">操作员</th>
+				<th data-options="field:'switchName',align:'center',width:160"><b>开关/线路</b></th>
+				<th data-options="field:'interruptTime',width:200,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');}"><b>时间</b></th>
+				<th data-options="field:'operate',width:150,align:'center'"><b>当前状态</b></th>
+				<th data-options="field:'operatorName',width:150,align:'center'"><b>操作员姓名</b></th>
 		</thead>
 		<tbody>
 			<tr>

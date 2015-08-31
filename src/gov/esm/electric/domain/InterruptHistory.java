@@ -15,6 +15,29 @@ public class InterruptHistory implements Serializable {
 	private String switchId;
 
 	private int operate;
+	
+	
+	/**断开*/
+	public static final int STATUS_SWITCH_OPEN = 10;
+	/**闭合*/
+	public static final int STATUS_SWITCH_CLOSE = 11;
+	/**闲置*/
+	public static final int STATUS_SWITCH_UNUSE = 12;
+	/**备用*/
+	public static final int STATUS_SWITCH_RESERVE = 13;
+	/**调试*/
+	public static final int STATUS_SWITCH_DEBUG = 14;
+	/**添加开关*/
+	public static final int STATUS_SWITCH_ADDSWITCH = 15;
+	/**删除开关*/
+	public static final int STATUS_SWITCH_DELETESWITCH = 16;
+	/**添加线路*/
+	public static final int STATUS_SWITCH_ADDLINE = 17;
+	/**删除线路*/
+	public static final int STATUS_SWITCH_DELETELINE = 18;
+	/**修改开关名称*/
+	public static final int STATUS_SWITCH_EDITSWITCHNAME = 19;
+	
 
 	public InterruptHistory() {
 	}

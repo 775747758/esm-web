@@ -71,8 +71,9 @@ public class CableSwitchDao {
 	public CableSwitch getCableSwitch(String id) {
 		//System.out.println("开关"+id+"size"+id.length());
 		List<CableSwitch> list=jdbcTemplate.query(sql_getCableSwitch, rowMapper, id.trim());
-		if(list.size()==0){
+		if(list==null||list.size()==0){
 			System.out.println("出错:"+id);
+			return null;
 		}
 		//return this.jdbcTemplate.queryForObject(sql_getCableSwitch, rowMapper, id);
 		return list.get(0); 
@@ -122,7 +123,7 @@ public class CableSwitchDao {
 	 * @return
 	 */
 	
-	private static  String sql_getSwitchNameByKeyword = "select name from cable_switch where name like";
+	private static  String sql_getSwitchNameByKeyword = "select CONCAT('开关',id) name from cable_switch where name like";
 	
 	public List<Map<String, Object>> getSwitchNameByKeyword(String keyword) {
 		//return this.jdbcTemplate.query(sql_getAllSwitch, rowMapper);
@@ -175,5 +176,10 @@ public class CableSwitchDao {
 			}
 		}
 		return this.jdbcTemplate.query(sql_getDownstreamByStatus, new Object[] { ids.toString(), status }, rowMapper);
+	}
+
+	private static final String sql_deleteById = "delete from cable_switch where id=?";
+	public int deleteWithId(String id) {
+		return this.jdbcTemplate.update(sql_deleteById, id);
 	}
 }

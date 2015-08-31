@@ -8,10 +8,12 @@ package gov.esm.electric.web.report;
 
 import gov.esm.electric.dao.InterruptHistoryDao;
 import gov.esm.electric.dao.UserLogDao;
+import gov.esm.electric.domain.Role;
 import gov.esm.electric.entity.InterruptHistoryVo;
 import gov.esm.electric.entity.TodayHistoryVo;
 import gov.esm.electric.entity.UserLogVo;
 import gov.esm.electric.service.InterruptHistoryService;
+import gov.esm.electric.web.Constant;
 import gov.esm.electric.web.circuit.JsonBean;
 
 import java.io.File;
@@ -64,6 +66,13 @@ public class UserLogController {
 	 */
 	@RequestMapping(value = "/userlog.do", method = RequestMethod.GET)
 	public String getTodayHistories(HttpServletRequest req) {
+		List<Role> roles = (List<Role>) req.getSession().getAttribute(Constant.SESSION_KEY_ROLES);
+		if(roles.get(0).getId()==4){
+			req.setAttribute("flag", "0");
+		}
+		else{
+			req.setAttribute("flag", "1");
+		}
 		return "/report/userlog";
 	}
 
@@ -71,13 +80,13 @@ public class UserLogController {
 	@RequestMapping(value = "/userlog.do", method = RequestMethod.POST)
 	@ResponseBody
 	public Object temp(@RequestParam(value = "rows", defaultValue = "10") int size,
-			@RequestParam(value = "page", defaultValue = "1") int pageNo) {
+			@RequestParam(value = "page", defaultValue = "1") int pageNo,HttpServletRequest request) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		List<UserLogVo> rows = interruptHistoryService.getUserLog(pageNo, size);
 		map.put("rows", rows);
 		int total = userLogDao.getUserTotal();
+		request.setAttribute("total", total+"");
 		map.put("total", total);
-		System.out.println(rows.get(0).getOperate());
 		return map;
 	}
 	
@@ -91,7 +100,7 @@ public class UserLogController {
 		try {
 			WritableWorkbook  wwb=Workbook.createWorkbook(new File("D:\\user_log.xls"));
 			WritableSheet ws= wwb.createSheet("student", 0);
-			Label label1=new Label(0, 0, "用户名");
+			Label label1=new Label(0, 0, "操作员姓名");
 			Label label2=new Label(1, 0, "登录时间");
 			Label label3=new Label(2, 0, "退出时间");
 			Label label4=new Label(3, 0, "开关/线路");

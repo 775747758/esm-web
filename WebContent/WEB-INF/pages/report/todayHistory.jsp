@@ -5,6 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>.datagrid-cell-rownumber{ width:50px; text-align:center; margin:0px; padding:3px 0px; color:#000; } .datagrid-header-rownumber{ width:50px; text-align:center; margin:0px; padding:3px 0px; } </style>
 <script type="text/javascript">
 	Date.prototype.format = function(format) {
 		if (!format) {
@@ -33,7 +34,7 @@
 		return format;
 	};
 	
-	
+	if("${flag}"=="1") {
 	toolbar = [ {
 		text : '导出今日报表',
 		handler : function() {
@@ -41,21 +42,35 @@
 			location.href = "report/today_report-excel.do";
 		}
 	}];
+	} 
+	else{
+		toolbar = [ ];
+	}
 	
-	
+	$(function(){
+		$('#today_histories').datagrid({
+			onClickCell: function (rowIndex, field, value) {
+				if(field=='operate'){
+					alert(value);
+				}
+			}
+		});
+		
+	});
+
 	
 </script>
 <title>停电通知</title>
 </head>
 <body>
 <div style="padding: 10px">
-	<table id="histories" class="easyui-datagrid" title="每日汇总表"
-		style="width: 100%; height: 600px"
+	<table id="today_histories" class="easyui-datagrid" title="每日汇总表"
+		style="width: 100%; height: 630px"
 		data-options="toolbar:toolbar,rownumbers:true,singleSelect:true,pagination:true,url:'/report/today-histories.do',method:'post'">
 		<thead>
 			<tr>
-				<th data-options="field:'operatorName',align:'center',width:160">用户名</th>
-				<th data-options="field:'operate',width:200,align:'center'">开关/线路</th>
+				<th data-options="field:'operatorName',align:'center',width:160"><b>操作员姓名</b></th>
+				<th data-options="field:'operate',width:800,align:'center'"><b>开关/线路</b></th>
 		</thead>
 		<tbody>
 			<tr>

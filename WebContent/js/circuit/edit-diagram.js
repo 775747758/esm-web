@@ -30,9 +30,13 @@ esm.circuit =  {
 			$(obj).attr("stroke", "#fff");
 			$("#selected").attr("lineId", $(obj).attr("id"));
 		} else {
-			if($(obj).attr("id").indexOf("C") ==-1 && $(obj).attr("id").indexOf("WS") == -1){
+			if($(obj).attr("id").indexOf("WS") == -1){
 				esm.circuit.cancelSelect();
-				$(obj).attr("xlink:href", "/images/N_UNUSE.png");
+				var imageUri = $(obj).attr("xlink:href");
+   				var arrXlink = imageUri.split("_");
+   		   		var arrColor = arrXlink[1].split(".");
+   		   		var oldColor = arrColor[0];
+   		   		$(obj).attr("xlink:href",imageUri.replace(oldColor,"UNUSE"));
 				$("#selected").attr("switchId", $(obj).attr("id"));
 			}
 		}
@@ -43,7 +47,14 @@ esm.circuit =  {
 		$("#selected").attr("lineId", "");
 		$("#"+selectedLineId).attr("stroke", "#FF0000");
 		$("#selected").attr("switchId", "");
-		$("#"+selectedSwitchId).attr("xlink:href", "/images/N_CLOSE.png");
+		if(selectedSwitchId!=""){
+			var image=$("#"+selectedSwitchId);
+			var imageUri = image.attr("xlink:href");
+			var arrXlink = imageUri.split("_");
+	   		var arrColor = arrXlink[1].split(".");
+	   		var oldColor = arrColor[0];
+	   		image.attr("xlink:href",imageUri.replace(oldColor,"CLOSE"));
+		}
 	},
 	editLine : function() {
 		var paper = Snap("#cableDiagram");
@@ -73,7 +84,7 @@ esm.circuit =  {
 				lines[0] = null;
 				if (counter % 2 == 1) {
 					startPoint.x = (event.clientX+rx)/1.5;
-					startPoint.y = (event.clientY+ry)/1.5-16;
+					startPoint.y = (event.clientY+ry)/1.5;
 					line = paper.line(startPoint.x, startPoint.y, 0, 0).attr({
 						stroke : "#FF0000"
 					});
@@ -99,7 +110,7 @@ esm.circuit =  {
 				rx = document.body.scrollLeft;  
 			}
 			endPoint.x = (event.clientX+rx)/1.5;
-			endPoint.y = (event.clientY+ry)/1.5-16;
+			endPoint.y = (event.clientY+ry)/1.5;
 			if (line != null) {
 				line.attr("x2", endPoint.x);
 				line.attr("y2", endPoint.y);
@@ -166,7 +177,7 @@ esm.circuit =  {
 				rx = document.body.scrollLeft;  
 			}
 			x = (event.clientX+rx)/1.5;
-			y = (event.clientY+ry)/1.5-16;
+			y = (event.clientY+ry)/1.5;
 		});
 		paper.mouseover(function(event) {
 			$("#cableDiagram").css("cursor", "pointer");
@@ -208,36 +219,45 @@ esm.circuit =  {
 		};
 		
 		var myDate = new Date();
-		var line2Id = $(obj).attr("id") + "_" + myDate.getTime();
+		var line2Id = "line-"+myDate.getTime();
 		var paper = Snap("#cableDiagram");
 		var text;
-		if(x1 == x2){//竪向
-			if(y1 < y2) {
-				var line1 = paper.paper.line(x1,y1,x1,y).attr({
+		
+		if(Math.abs(x1-x2)<5 || Math.abs(x2-x1)<5){//竪向
+			if(parseFloat(y1) < parseFloat(y2)) {
+				var line1 = paper.paper.line(x1,y1,x1,y-4).attr({
 					id:$(obj).attr("id"),
 					stroke:"#FF0000"
 				});
-				var line2 = paper.paper.line(x2,y+12,x2,y2).attr({
+				var line2 = paper.paper.line(x2,y+14,x2,y2).attr({
 					id:line2Id,
 					stroke:"#FF0000"
 				});
 				var switchImg = paper.paper.image("/images/N_CLOSE.png", x-10, y, 20, 12);
+				
+				var rotate = "90 "+x+" "+(y+5);
+				switchImg.attr("transform", "rotate("+rotate+")");
 			} else {
-				var line1 = paper.paper.line(x1,y1,x1,y+12).attr({
+				var line1 = paper.paper.line(x1,y1,x1,y+14).attr({
 					id:$(obj).attr("id"),
 					stroke:"#FF0000"
 				});
-				var line2 = paper.paper.line(x2,y,x2,y2).attr({
+				
+				var line2 = paper.paper.line(x2,y-4,x2,y2).attr({
 					id:line2Id,
 					stroke:"#FF0000"
 				});
+				
 				var switchImg = paper.paper.image("/images/N_CLOSE.png", x-10, y, 20, 12);
+				
+				var rotate = "90 "+x+" "+(y+5);
+				switchImg.attr("transform", "rotate("+rotate+")");
 			}
-			text = paper.paper.text(x+12, y).attr({
+			text = paper.paper.text(x+8, y+8).attr({
 				id : "snap"
 			});
-		}else if(y1 == y2){//橫向
-			if(x1 < x2) {
+		}else if(Math.abs(y1-y2)<5 || Math.abs(y2-y1)<5){//橫向
+			if(parseFloat(x1) < parseFloat(x2)) {
 				var line1 = paper.paper.line(x1,y1,x,y2).attr({
 					id:$(obj).attr("id"),
 					stroke:"#FF0000"
@@ -258,7 +278,7 @@ esm.circuit =  {
 				});
 				var switchImg = paper.paper.image("/images/N_CLOSE.png", x, y-7, 20, 12);
 			}
-			text = paper.paper.text(x, y+10).attr({
+			text = paper.paper.text(x, y+13).attr({
 				id : "snap"
 			});
 		}
@@ -285,22 +305,33 @@ esm.circuit =  {
 		var selectedLineId = $("#selected").attr("lineId");
 		var selectedSwitchId = $("#selected").attr("switchId");
 		
-		$("#selected").attr("switchId", "");
-		$("#selected").attr("lineId", "");
-
-		$("line").each(function(i){
-	        $(this).removeAttr("onclick");
-		});
-		$("svg>image[id^=switch]").each(function(i){
-	        $(this).removeAttr("onclick");
-		});
-		$("text").each(function(i){
-	        $(this).removeAttr("onclick");
-		});
-		if(selectedLineId.indexOf("line") != -1){
-			deleteLine(selectedLineId);
-		} else {
-			deleteSwitch(selectedSwitchId);
+		if(selectedLineId==""&&selectedSwitchId=="") {
+			$.messager.alert("系统提示","请选择要删除的线路或开关!");
+			return;
 		}
+		
+		$.messager.confirm('提示信息' , '确认删除?' , function(r){
+			if(r){
+				$("#selected").attr("switchId", "");
+				$("#selected").attr("lineId", "");
+
+				$("line").each(function(i){
+			        $(this).removeAttr("onclick");
+				});
+				$("svg>image[id^=switch]").each(function(i){
+			        $(this).removeAttr("onclick");
+				});
+				$("text").each(function(i){
+			        $(this).removeAttr("onclick");
+				});
+				if(selectedLineId.indexOf("line") != -1){
+					deleteLine(selectedLineId);
+				} else {
+					deleteSwitch(selectedSwitchId);
+				}
+			} else {
+				return ;
+			}
+		});
 	}
 }

@@ -50,7 +50,7 @@ public class CableLineDao {
 	private static final String sql_getCableLine = "select id,code,name,parentId,status from cable_line where id=?";
 
 	@Transactional(propagation = Propagation.SUPPORTS)
-	public CableLine getCableLine(int id) {
+	public CableLine getCableLine(String id) {
 		return this.jdbcTemplate.queryForObject(sql_getCableLine, rowMapper, id);
 	}
 
@@ -87,6 +87,16 @@ public class CableLineDao {
 		temp.append(" ").append("'"+keyword+"%'");
 		System.out.println(temp.toString());
 		return jdbcTemplate.queryForList(temp.toString());
+	}
+	
+	private static  String sql_getAllLines = "select distinct * from cable_line";
+	/**
+	 * 得到所有以keyword开头的线路
+	 * 
+	 * @return
+	 */
+	public List<CableLine> getAllLines() {
+		return jdbcTemplate.query(sql_getAllLines,rowMapper);
 	}
 	private static final String sql_deleteById = "delete from cable_line where id=?";
 

@@ -30,6 +30,14 @@ public class UserLogVo {
 	public void setLogoutTime(Date logoutTime) {
 		this.logoutTime = logoutTime;
 	}
+	@Override
+	public String toString() {
+		return "UserLogVo [operatorName=" + operatorName + ", operate="
+				+ operate + ", loginTime=" + loginTime + ", logoutTime="
+				+ logoutTime + "]";
+	}
+	
+	
 	
 	
 }

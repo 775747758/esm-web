@@ -6,12 +6,14 @@
 	</head>
 	<body>
 		<form id="editTextForm" action="">
-			<table>
-				<tr>
-					<td width="120px">内容:</td>
-					<td><input type="text" id=elementText value="${elementText}" class="easyui-validatebox"/></td>
-				</tr>
-			</table>
+			<div style="padding: 10px;">
+				<table>
+					<tr>
+						<td width="120px">内容:</td>
+						<td><input type="text" id=elementText value="${elementText}" class="easyui-validatebox"/></td>
+					</tr>
+				</table>
+			</div>
 		</form>
 	</body>
 </html>

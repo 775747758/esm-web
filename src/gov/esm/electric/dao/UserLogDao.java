@@ -61,11 +61,11 @@ public class UserLogDao {
 
 	
 	
-	private static final String sql_log="select * from user_log";
+	private static final String sql_log="select * from user_log ";
 
 	public List<UserLog> getUserLog( int index, int size) {
 		StringBuilder builder=new StringBuilder();
-		builder.append(sql_log).append(" limit ").append((index - 1) * size).append(",").append(size);
+		builder.append(sql_log).append(" order by id desc ").append(" limit ").append((index - 1) * size).append(",").append(size);
 		System.out.println(builder.toString());
 		return this.jdbcTemplate.query(builder.toString(), rowMapper);
 	}
@@ -75,9 +75,10 @@ public class UserLogDao {
 	    Date today=cal.getTime();
 		StringBuilder sql = new StringBuilder(128);
 		sql.append(sql_log);
-		sql.append(" where loginTime>=").append("'").append(formaterDate.format(today)+" 08:00:00").append("'")
+		sql.append(" where loginTime>=").append("'").append(formaterDate.format(today)+" 00:00:00").append("'")
 		.append(" and ").append("logoutTime<=").append("'")
-		.append(formaterDate.format(new Date())+" 18:00:00").append("'");
+		.append(formaterDate.format(new Date())+" 24:00:00").append("'");
+		sql.append(" order by id desc");
 		return this.jdbcTemplate.query(sql.toString(), rowMapper);
 	}
 	

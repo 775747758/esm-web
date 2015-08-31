@@ -34,8 +34,9 @@
 	}
 </script>
 <body>
-
-	请输入旧密码：<input id="oldPassword" type="text"  class="easyui-textbox" /><br> 
+<div style="padding: 10px">
+	请输入旧密码：<input id="oldPassword" type="text"  class="easyui-textbox" /><br> <br>
 	请输入新密码：<input id="newPassword" type="text"  class="easyui-textbox" /><br>
+	</div>
 </body>
 </html>

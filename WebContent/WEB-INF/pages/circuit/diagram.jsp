@@ -2,6 +2,7 @@
 
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11-flat-20030114.dtd">
 <!-- Created by SVGDeveloper 1.0 -->
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
 <head>
 <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
@@ -55,67 +56,73 @@ body{background-color: #333;}
 </style>
 <script type="text/javascript" src="http://sandbox.runjs.cn/uploads/rs/233/bkf2ntm7/jquery.radio.js"></script>
 <script type="text/javascript" src="/js/index.js"></script>
-
-
-
 </head>
 <body>
-
-
-<div id="toobar" style="overflow:hidden;position:relative;top:10px;left:10px;">
-<input type="button" id="findButton"   width="50" height="30"  class="esmButton" value="查找开关" ></input>
-<input type="button" id="sendMessageBt"  onclick="sendMsg()" class="esmButton" value="发布通知" ></input>  
-<input type="button" id="refresh"  onclick="refresh()" class="esmButton" value="刷新" ></input>
-</div>
-
-<div id="outDiv"  style="background:#000;overflow:hidden;position:relative;left:0px;width:1500px;height:600px;top:20px;border:1px solid gray;">
-<div id="glass" class="glass" style="display:none;">正在玩儿命计算...</div>
-
-<div id="container" style="overflow:hidden;position:relative;left:0px;top:50px;">
-  <svg id="cableDiagram" viewBox="0 0 1499 899" width="1499" height="899" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" style="background-color:black">
-   ${cableDiagram.html}
-  </svg>
- </div>
- </div>
- <div style="display: none;">
- 
-  <div id="msgWin" class="easy-dialog"  shadow=true resizable=true title="发布通知" style="width:510px;height:250px;padding:10px;background:#fafafa;"
-collapsible:true,minimizable:true,maximizable:true">
-<textarea id="text" cols=55 rows=7  name="notice" ></textarea>
-</div> 
-
-<div id="selectWin" class="easy-dialog"  shadow=true resizable=true title="选择状态" style="width:250px;height:320px;padding:10px;background:#fafafa;collapsible:true;minimizable:true;maximizable:true">
-	<div class="middle" id="radios" style="margin-left:50px;margin-top: 20px ">
-		<input type="radio" name="status" value="2" checked   >&nbsp;正常<br><br>
-		<input type="radio" name="status" value="1"  >&nbsp;断开<br><br>
-		<input type="radio" name="status" value="4"  >&nbsp;备用<br><br>
-		<input type="radio" name="status" value="3"  >&nbsp;闲置<br><br>
+	<div id="toobar" style="overflow:hidden;position:relative;top:10px;left:10px;">
+		<input type="button" id="findButton"   width="50" height="30"  class="esmButton" value="查找开关" ></input>
+			<c:if test="${flag eq '1'}">
+				<input type="button" id="sendMessageBt"  onclick="sendMsg()" class="esmButton" value="发布通知" ></input>  
+			</c:if>
+		<input type="button" id="refresh"  onclick="refresh()" class="esmButton" value="刷新" ></input>
 	</div>
-	<br><br>
-</div>
-</div>
+	
+	<div id="outDiv"  style="background:#000;overflow:hidden;position:relative;left:0px;width:1500px;height:600px;top:30px;border:1px solid gray;">
+		<div id="glass" class="glass" style="display:none;">正在玩儿命计算...</div>
+		<div id="container" style="overflow:hidden;position:relative;left:0px;top:50px;">
+			<svg id="cableDiagram" viewBox="0 0 1599 899" width="1599" height="899" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" style="background-color:black">
+				${cableDiagram.html}
+			</svg> 
+		</div>
+	</div>
+	
+	<div style="display: none;">
+	
+		<div id="msgWin" class="easy-dialog"  shadow=true resizable=true title="发布通知" style="width:510px;height:250px;padding:10px;background:#fafafa;collapsible:true;minimizable:true;maximizable:true">
+			<textarea id="text" cols=55 rows=7  name="notice" ></textarea>
+		</div>
+		
+		<div id="selectWinSwitch">
+			<div class="easy-dialog"  shadow=true resizable=true title="选择状态" style="padding:10px;background:#fafafa;collapsible:true;minimizable:true;maximizable:true">
+				<div class="middle" id="radios" style="margin-left:50px;margin-top: 20px ">
+					<input type="radio" name="status" value="2" checked="checked">&nbsp;正常<br><br>
+					<input type="radio" name="status" value="1"  >&nbsp;断开<br><br>
+					<input type="radio" name="status" value="4"  >&nbsp;备用<br><br>
+					<input type="radio" name="status" value="3"  >&nbsp;闲置<br><br>
+				</div>
+			</div>
+	</div>
 
-<div class="search-box" id="search-box" style="display:none">
- 	<div class="logo"></div>
-	<div id="search_tab" class="search-tab">
- 		<ul id="tab" class="tab" >
- 			<li id="tab_1" >开关</li>
- 			<li id="tab_2" >线路</li>
- 		</ul>
- 	</div>
+	</div>
+	
+	<div class="search-box" id="search-box" style="display:none;">
+		<div id="search_tab" class="search-tab">
+	 		<ul id="tab" class="tab" >
+	 			<li id="tab_1" >开关</li>
+	 			<li id="tab_2" >线路</li>
+	 		</ul>
+	 	</div>
 	 	<form class="search-form"  id="search-form">
 	 		<input type="text" class="search-text" name="q" id="search_input" autocomplete="off" value=""/>
 	 		<input type="button" class="search-button" onclick="find()"  value=""/>
 	 	</form>
-</div>
-
- <div class="suggest" id="search-suggest" style="display:none">
-	<ul id="search-result">
-	</ul>
-</div>
-
+	</div>
+	
+	<div class="suggest" id="search-suggest" style="display:none">
+		<ul id="search-result"></ul>
+	</div>
 
 <script type="text/javascript">
+function refresh() {
+	esm.common.tab.refresh();
+};
+function checkWDKBZ(){
+	if($("#switch-MF911").attr("xlink:href").indexOf('OPEN')>0||$("#switch-MF912").attr("xlink:href").indexOf('OPEN')>0||$("#switch-MF921").attr("xlink:href").indexOf('OPEN')>0||$("#switch-MF922").attr("xlink:href").indexOf('OPEN')>0){
+		$("#WDKBZ").attr("xlink:href","/images/wd_open.gif");
+	}
+	else{
+		$("#WDKBZ").attr("xlink:href","/images/wd_close.gif");
+	}
+}
 
 
 var aryX1 = new Array();
@@ -245,6 +252,7 @@ var colorTemp;
 	}
 	
 function sendMsg(){
+	$("#text").val("");
 	$('#msgWin').dialog({
 	buttons:[{
 		text:'确定',
@@ -255,7 +263,7 @@ function sendMsg(){
 				alert("发布成功！");
 				$('#msgWin').dialog('close');
 			} ,"JSON");
-		
+			
 		}
 	},{
 		text:'取消',
@@ -340,27 +348,20 @@ function searchLine(){
 	}, 200);
 	intervals.push(intervalLine);
 
-			var maxX=Array.max(aryX1)>Array.max(aryX2)?Array.max(aryX1):Array.max(aryX2);
-			var maxY=Array.max(aryY1)>Array.max(aryY2)?Array.max(aryY1):Array.max(aryY2);
-			var minY=Array.min(aryY1)<Array.min(aryY2)?Array.min(aryY1):Array.min(aryY2);
-			var minX=Array.min(aryX1)<Array.min(aryX2)?Array.min(aryX1):Array.min(aryX2);
-			//alert("maxX:"+maxX+"maxY:"+maxY+"minY:"+minY+"minX:"+minX);
-				
-				var x=(maxX-minX)/2,y=(maxY-minY)/2;
-				var ctm;
-				if(aryX1.length<2){
-					ctm=jQuery("line[title^="+er+"]")[0].getCTM();
-				}
-				else{
-					ctm=jQuery("line[title^="+er+"]")[1].getCTM();
-				}
-				var curX=x*ctm.a+y*ctm.c+ctm.e,curY=x*ctm.b+y*ctm.d+ctm.f;			
-				$("svg").width(1599*2).height(899*2);
-				$("#container").css("left",$("#outDiv").width()/2-curX-x);
-				$("#container").css("top",$("#outDiv").height()/2-curY-y);
-				
-				$("#container").width($("#container").width()*2);
-				$("#container").height($("#container").height()*2);
+	var temp=er.substring(0,2)+"变";
+	
+	var x=0,y=0;
+	var ctm=jQuery("svg>image[title^="+temp+"]")[0].getCTM();
+	
+	var curX=x*ctm.a+y*ctm.c+ctm.e,curY=x*ctm.b+y*ctm.d+ctm.f;		
+	
+	$("svg").width(1599*2).height(899*2);
+	$("#container").css("left",$("#outDiv").width()/2-curX-x-200);
+	$("#container").css("top",$("#outDiv").height()/2-curY-y-200);
+	
+	$("#container").width($("#container").width()*1.5);
+	$("#container").height($("#container").height()*1.5);
+
 		
 	}
 }
@@ -400,9 +401,12 @@ function searchSwitch(){
 		var isLight=false;
 		//获取查找输入框的值
 		var er=$("#search_input").val();
+		//alert(jQuery("svg>image[title^="+er+"]"));
 		if(er=="")
 		{
 			$.messager.alert('提示信息','请输入开关ID');
+		}else if(jQuery("svg>image[title^="+er+"]").size()<1){
+			$.messager.alert('提示信息','您输入正确的开关ID！');
 		}
 		else if(er.length<3)
 		{
@@ -415,8 +419,10 @@ function searchSwitch(){
 					arySwitch.push($(this));
 					$(this).attr("stroke", "#FFFFFF");
 					$(this).attr("fill", "#FFFFFF");
+					
 				}
 			});
+			
 			isExist=true;
 			//已经搜索到开关
 			
@@ -426,6 +432,7 @@ function searchSwitch(){
 		   	var arrColor = arrXlink[1].split(".");
 		   	var oldColor = arrColor[0];
 		   	beforeColor=oldColor;
+		   
 		   	beforeSwitch=image;
 		   	image.mouseover(function(){
 		   		isMouseover=true;
@@ -434,6 +441,7 @@ function searchSwitch(){
 					clearInterval(intervals[i]);
 				}
 		   		image.attr("xlink:href",imageUri.replace(colorTemp,oldColor));
+		   		image.unbind("mouseover");
 		   	});
 		   	
 		   	intervalSwitch = setInterval(function() {
@@ -457,23 +465,45 @@ function searchSwitch(){
 				
 				
 						//当查找到开关后，使svg显示在正中央
-				if(jQuery("svg>image[id^=switch-"+er+"]").size()>0)
+				if(jQuery("svg>image[title^="+er+"]").size()>0)
 				{
-					
+					//alert(jQuery("svg>image[title^="+er+"]"));
 					var x=Number(jQuery("svg>image[title^="+er+"]").attr("x")),y=Number(jQuery("svg>image[title^="+er+"]").attr("y"));
-					var ctm=jQuery("svg>image[title^="+er+"]")[0].getCTM();
-					var curX=x*ctm.a+y*ctm.c+ctm.e,curY=x*ctm.b+y*ctm.d+ctm.f;			
-					$("svg").width(1599*3).height(899*3);
-					$("#container").css("left",$("#outDiv").width()/2-curX-x);
-					$("#container").css("top",$("#outDiv").height()/2-curY-y);
+					//新添加的开关没有transform属性
+					if(jQuery("svg>image[title^="+er+"]").attr("transform")==undefined){
+						$("#container").css("left",$("#outDiv").width()/2-x);
+						$("#container").css("top",$("#outDiv").height()/2-y);
+					}
+					else{
+						if(jQuery("svg>image[title^="+er+"]").attr("x").length>10){
+							$("#container").css("left",$("#outDiv").width()/2-x);
+							$("#container").css("top",$("#outDiv").height()/2-y);
+						}else{
+							
+							var ctm=jQuery("svg>image[title^="+er+"]")[0].getCTM();
+							var curX=x*ctm.a+y*ctm.c+ctm.e,curY=x*ctm.b+y*ctm.d+ctm.f;	
+							if(ctm.f<0){
+								$("#container").css("left",$("#outDiv").width()/2-x-curX);
+								$("#container").css("top",$("#outDiv").height()/2-y+curY);
+							}else{
+								$("#container").css("left",$("#outDiv").width()/2-x-curX);
+								$("#container").css("top",$("#outDiv").height()/2-y-curY);
+							}
+							
+							
+						}
+						
+						
+					}
 					
-					$("#container").width($("#container").width()*2);
-					$("#container").height($("#container").height()*2);
+					/* $("svg").width(1599*2).height(899*2);
+					$("#container").width($("#container").width()*1.5);
+					$("#container").height($("#container").height()*1.5); */
 					
-				}
+				}	
 			}
 			else{
-				$.messager.alert('提示信息','您输入的开关ID没有找到！');
+				//$.messager.alert('提示信息','您输入的开关ID没有找到！');
 			}
 		}
 }
@@ -502,42 +532,44 @@ var ColorsLine = new Array('red','#27fb06','#fffe01','#757575');
 jQuery("svg>image[id^=ST_]").each(function(){
     var image = this;
    	jQuery(image).bind("click",function(){
-   		$('#selectWin').dialog({
-   		buttons:[{
-   			text:'确定',
-   			iconCls:'icon-ok',
-   			handler:function(){
-   				//2:正常1：断开  4：备用   3：闲置
-   				var status=$("input[name='status']:checked").val();
-   		
-   				var imageUri = jQuery(image).attr("xlink:href");
-   				var arrXlink = jQuery(image).attr("xlink:href").split("_");
-   		   		var arrColor = arrXlink[2].split(".");
-   		   		var oldColor = arrColor[0];
-   		   		var newColor=StatusArr[parseInt(status)-1];
-   		   		
-   		   		//alert(newColor);
-   				jQuery(image).attr("xlink:href",imageUri.replace(oldColor,newColor));
-   				
-   		   		var arrId = jQuery(image).attr("id").split("_");
-   		   		var id = arrId[1];
-   		   	
-   		   		//var lines = getLinesBySwitchId(id,parseInt(status)+9);
-   		   		/* for(var i=0;i<lines.length;i++){
-   		   			
-   						jQuery("line[id='line-"+lines[i]+"']").attr("stroke",Colors[parseInt(status)-1]);
-   				} */
-   				getLinesBySwitchId(id,parseInt(status)+9);
-   		   	$("#selectWin").dialog('close');
-   			}
-   		},{
-   			text:'取消',
-   			iconCls:'icon-cancel',
-   			handler:function(){	
-   				//alert("ddd");
-   				$("#selectWin").dialog('close');}
-   		}
-   		]
+   		$('#selectWinSwitch').dialog({
+ 			title: '处理方式',
+		    width: 250,
+		    height: 400,
+		    cache: false,
+	   		buttons:[{
+	   			text:'确定',
+	   			iconCls:'icon-ok',
+	   			handler:function(){
+	   				//2:正常1：断开  4：备用   3：闲置
+	   				var status=$("input[name='status']:checked").val();
+	   		
+	   				var imageUri = jQuery(image).attr("xlink:href");
+	   				var arrXlink = jQuery(image).attr("xlink:href").split("_");
+	   		   		var arrColor = arrXlink[2].split(".");
+	   		   		var oldColor = arrColor[0];
+	   		   		var newColor=StatusArr[parseInt(status)-1];
+	   		   		
+	   		   		//alert(newColor);
+	   				jQuery(image).attr("xlink:href",imageUri.replace(oldColor,newColor));
+	   				
+	   		   		var arrId = jQuery(image).attr("id").split("_");
+	   		   		var id = arrId[1];
+	   		   	
+	   		   		//var lines = getLinesBySwitchId(id,parseInt(status)+9);
+	   		   		/* for(var i=0;i<lines.length;i++){
+	   		   			
+	   						jQuery("line[id='line-"+lines[i]+"']").attr("stroke",Colors[parseInt(status)-1]);
+	   				} */
+	   				getLinesBySwitchId(id,parseInt(status)+9,true);
+	   		   		$("#selectWinSwitch").dialog('close');
+	   			}
+	   		},{
+	   			text:'取消',
+	   			iconCls:'icon-cancel',
+	   			handler:function(){	
+	   				$("#selectWinSwitch").dialog('close');}
+	   		}]
 
    		});
 
@@ -549,10 +581,9 @@ jQuery("svg>image[id^=switch]").each(function(){
    	jQuery(image).bind("click",function(){
    		var arrId = jQuery(image).attr("id").split("-");
 		var id = arrId[1];
-		
 		var fdStart = id.indexOf("WS");
 		if(fdStart == 0){
-			$.messager.confirm("操作提示", "此开关为握手开关，您确定要执行操作吗？", function (data) {
+			$.messager.confirm("操作提示", "握手开关谨慎操作，注意核项", function (data) {
 	            if (data) {
 	            	var imageUri = jQuery(image).attr("xlink:href");
 	   				var arrXlink = jQuery(image).attr("xlink:href").split("_");
@@ -570,47 +601,51 @@ jQuery("svg>image[id^=switch]").each(function(){
 	   		   		}
 	   		
 	   				jQuery(image).attr("xlink:href",imageUri.replace(oldColor,newColor));
-	   		   		getLinesBySwitchId(id,status); 
+	   		   		getLinesBySwitchId(id,status,true); 
 	            }
 	           
 	        });
 			
 		}
 		else{
-			$('#selectWin').dialog({
+			$('#selectWinSwitch').dialog({
+				title: '处理方式',
+				width: 250,
+			    height: 400,
+			    cache: false,
 	   	   		buttons:[{
 	   	   			text:'确定',
 	   	   			iconCls:'icon-ok',
 	   	   			handler:function(){
-	   	   			//2:正常1：断开  4：备用   3：闲置
+	   	   				//2:正常1：断开  4：备用   3：闲置
 	   	   				var status=$("input[name='status']:checked").val();
-	   	   			
 	   	   				var imageUri = jQuery(image).attr("xlink:href");
 	   	   				var arrXlink = jQuery(image).attr("xlink:href").split("_");
 	   	   		   		var arrColor = arrXlink[1].split(".");
 	   	   		   		var oldColor = arrColor[0];
 	   	   		   		var newColor=StatusArr[status-1];
-	   	   				jQuery(image).attr("xlink:href",imageUri.replace(oldColor,newColor));
 	   	   		   		var arrId = jQuery(image).attr("id").split("-");
 	   	   		   		var id = arrId[1];
-	   	   		   		getLinesBySwitchId(id,parseInt(status)+9);
-	   	   		   		
-	   	   		   	$("#selectWin").dialog('close');
+	   	   		   		getLinesBySwitchId(id,parseInt(status)+9,false);
+	   	   		  		if(id=="MF911"||id=="MF912"||id=="MF921"||id=="MF922"){
+   	   		  				checkWDKBZ();
+	   		 			}
+	   	   		   		$("#selectWinSwitch").dialog('close');
 	   	   			}
 	   	   		},{
 	   	   			text:'取消',
 	   	   			iconCls:'icon-cancel',
-	   	   			handler:function(){$("#selectWin").dialog('close');}
-	   	   		}
-	   	   		]
-
-	   	   		});
+	   	   			handler:function(){
+	   	   				$("#selectWinSwitch").dialog('close');
+   	   				}
+	   	   		}]
+   	   		});
 		}
 	});
 });
 
 //根据一个开关id得到该开关影响的线路id集合
-function getLinesBySwitchId(switchId,status){
+function getLinesBySwitchId(switchId,status,isStation){
 	var lines = null;
 	var switchs = null;
 	jQuery.ajax({
@@ -619,21 +654,36 @@ function getLinesBySwitchId(switchId,status){
 		type:"post",
 		async:false,
 		success:function(data){
+			
 			if(data.oc > 0){
 				lines = data.lines;
-				 switchs = data.switchs;
+			 	switchs = data.switchs;
+			 	if(!isStation){
+			 		var currentImage=jQuery("image[id='switch-"+switchId+"']");
+			 		var Cstatus=$("input[name='status']:checked").val();
+	   				var CimageUri = jQuery(currentImage).attr("xlink:href");
+	   				var CarrXlink = jQuery(currentImage).attr("xlink:href").split("_");
+	   		   		var CarrColor = CarrXlink[1].split(".");
+	   		   		var ColdColor = CarrColor[0];
+	   		   		var CnewColor=StatusArr[Cstatus-1];
+	   		   		jQuery(currentImage).attr("xlink:href",CimageUri.replace(ColdColor,CnewColor));
+			 	}
+	   		   		
 				 if (typeof(switchs) != "undefined"){
 					 if(switchs!=null||switchs!=""){
 							for(var i=0;i<switchs.length;i++){
 								var image=jQuery("image[id='switch-"+switchs[i]+"']");
 								var imageUri = image.attr("xlink:href");
-				   				var arrXlink = imageUri.split("_");
-				   		   		var arrColor = arrXlink[1].split(".");
-				   		   		var oldColor = arrColor[0];
-				   		   		image.attr("xlink:href",imageUri.replace(oldColor,data.action));
+								if(typeof(imageUri) != "undefined"){
+					   				var arrXlink = imageUri.split("_");
+					   		   		var arrColor = arrXlink[1].split(".");
+					   		   		var oldColor = arrColor[0];
+					   		   		image.attr("xlink:href",imageUri.replace(oldColor,data.action));
+								}
 							}
 						} 
 				}
+				 
 				 if (typeof(lines) != "undefined"){
 					 if(lines!=null||switchs!=""){
 						 for(var i=0;i<lines.length;i++){
@@ -644,19 +694,15 @@ function getLinesBySwitchId(switchId,status){
 				
 			}else if(data.oc<0){
 				jQuery.messager.alert('系统提示',data.tip,'error');
+				
 			}
 		}
 	});
-	return lines;
 }
 
 //设置鼠标光标形状
 function setMouseCursor(cursor){
 	jQuery("#container").css("cursor",cursor);
-}
-
-function refresh() {
-	esm.common.tab.refresh();
 }
 jQuery(
    function(){
@@ -674,6 +720,7 @@ jQuery(
 				//开关
 				if(s.type!=4)
   				{	
+					
   					var img=jQuery("image[id='switch-"+s.id+"']");
 	   				var imageUri = img.attr("xlink:href");
 	   				var arrXlink = imageUri.split("_");
@@ -681,7 +728,11 @@ jQuery(
 	   		   		var oldColor = arrColor[0];
 	   		   		var newColor=StatusArr[s.status-10];
 	   		 	 	img.attr("xlink:href",imageUri.replace(oldColor,newColor));
-	   		 	
+	   		 		if(s.id=="MF911"||s.id=="MF912"||s.id=="MF921"||s.id=="MF922"){
+	   		 			if(s.status==10){
+	   		 				$("#WDKBZ").attr("xlink:href","/images/wd_open.gif");
+	   		 			}
+	   		 		}
   				}
 				//变电站
 				else if(s.type==4){
@@ -720,10 +771,10 @@ jQuery(
    	});
 	jQuery("#glass").slideUp(500);
    	jQuery("#container").draggable();
+	$(".window").each(function(i){
+		$(this).remove();
+	});
 });
 
 </script>
 </html>
-
-
-

@@ -86,9 +86,21 @@ public class UserDao {
 	@Transactional(propagation = Propagation.SUPPORTS)
 	public String getRealName(int id) {
 		Integer[] idArra={id};
+		System.out.println("<<<<<<::"+idArra[0]);
 		System.out.println(this.jdbcTemplate.queryForObject(sql_realName, idArra,String.class));
 		return this.jdbcTemplate.queryForObject(sql_realName, idArra,String.class);
 	}
+	
+	
+	public static final String sql_password = "select count(*) from user where name=?";
+	
+	@Transactional(propagation = Propagation.SUPPORTS)
+	public Integer getPassword(String username) {
+		String[] idArra={username};
+		return this.jdbcTemplate.queryForObject(sql_password, idArra,Integer.class);
+	}
+	
+	
 	
 
 	private static final String sql_getUsers = "select "

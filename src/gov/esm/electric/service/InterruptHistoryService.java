@@ -10,10 +10,12 @@ import gov.esm.electric.entity.TodayHistoryVo;
 import gov.esm.electric.entity.UserLogVo;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import javax.annotation.Resource;
 
@@ -153,5 +155,13 @@ public class InterruptHistoryService {
 	}
 	
 	
-	
+	public void addInterruptHistory(int userId, String switchId, int status) {
+		InterruptHistory entity = new InterruptHistory();
+		Calendar now = Calendar.getInstance(Locale.PRC);
+		entity.setInterruptTime(now.getTime());
+		entity.setOperater(userId);
+		entity.setSwitchId(switchId);
+		entity.setOperate(status);
+		interruptHistoryDao.insert(entity);
+	}
 }

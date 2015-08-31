@@ -1,5 +1,6 @@
 package gov.esm.electric.web;
 
+import gov.esm.assistor.SpringContextHolder;
 import gov.esm.electric.dao.InterruptHistoryDao;
 import gov.esm.electric.dao.UserLogDao;
 import gov.esm.electric.domain.Permission;
@@ -123,6 +124,8 @@ public class LoginController {
 	 */
 	@RequestMapping(value = "/logout.do", method = RequestMethod.GET)
 	public String logout(HttpServletRequest req, HttpServletResponse resp) {
+		
+		UserLogDao userLogDao=(UserLogDao)SpringContextHolder.getBeanOneOfType(UserLogDao.class);
 		User user = (User) req.getSession().getAttribute(Constant.SESSION_KEY_USER);
 		Date loginDate=(Date) req.getSession().getAttribute(Constant.SESSION_KEY_LOGIN_TIME);
 		Calendar now = Calendar.getInstance(Locale.PRC);
@@ -132,7 +135,6 @@ public class LoginController {
 		entity.setUserId(user.getId());
 		userLogDao.insert(entity);
 		
-		System.out.println("时："+loginDate.getHours()+"分："+loginDate.getMinutes());
 		Enumeration<String> em = req.getSession().getAttributeNames();
 		while (em.hasMoreElements()) {
 			req.getSession().removeAttribute(em.nextElement().toString());

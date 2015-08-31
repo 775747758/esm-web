@@ -7,7 +7,9 @@
 package gov.esm.electric.web.report;
 
 import gov.esm.electric.dao.InterruptHistoryDao;
+import gov.esm.electric.domain.Role;
 import gov.esm.electric.entity.InterruptHistoryVo;
+import gov.esm.electric.web.Constant;
 import gov.esm.electric.web.circuit.JsonBean;
 
 import java.io.File;
@@ -20,19 +22,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.PageContext;
 
 import jxl.Workbook;
 import jxl.write.DateFormat;
@@ -44,15 +40,12 @@ import jxl.write.WritableWorkbook;
 import jxl.write.WriteException;
 import jxl.write.biff.RowsExceededException;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.jspsmart.upload.SmartUpload;
-import com.jspsmart.upload.SmartUploadException;
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
 /**
  * 断电历史记录报表
@@ -67,6 +60,9 @@ public class InterruptHistoryReportController {
 
 	@Resource
 	private InterruptHistoryDao interruptHistoryDao;
+	
+	private String[] oparateAry={"2","闭合","断开","闲置","备用","添加开关","删除开关","添加线路","删除线路"};
+	
 
 	/**
 	 * 断电记录报表
@@ -77,6 +73,13 @@ public class InterruptHistoryReportController {
 	 */
 	@RequestMapping(value = "/interrupt-histories.do", method = RequestMethod.GET)
 	public String getInterruptHistories(HttpServletRequest req) {
+		List<Role> roles = (List<Role>) req.getSession().getAttribute(Constant.SESSION_KEY_ROLES);
+		if(roles.get(0).getId()==4){
+			req.setAttribute("flag", "0");
+		}
+		else{
+			req.setAttribute("flag", "1");
+		}
 		return "/report/interruptHistory";
 	}
 
@@ -88,6 +91,7 @@ public class InterruptHistoryReportController {
 		Map<String, Object> map = new HashMap<String, Object>();
 		List<InterruptHistoryVo> rows = this.interruptHistoryDao.getHistories(
 				null, null, pageNo, size);
+		
 		System.out.println(rows.get(0).getOperate());
 		map.put("rows", rows);
 		int total = this.interruptHistoryDao.getHistoryTotal(null, null,null,null,null);
@@ -124,8 +128,10 @@ public class InterruptHistoryReportController {
 			@RequestParam(value = "endDate") String endDate,
 			@RequestParam(value = "operatorName") String operatorName
 			)  {
+		
+		operate=oparateAry[Integer.parseInt(operate)];
 		System.out.println(switchId);
-		SimpleDateFormat sdf =   new SimpleDateFormat( "MM/dd/yyyy" );//01/25/2015
+		SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd" );//01/25/2015
 		 
 		Date enddate=null;
 		Date begindate = null;
@@ -145,6 +151,15 @@ public class InterruptHistoryReportController {
 			e.printStackTrace();
 		}
 		
+		//当开始时间和结束时间一样时
+		if(StringUtils.isNotBlank(beginDate)&&StringUtils.isNotBlank(endDate)&&beginDate.equals(endDate)){
+			Calendar cal=Calendar.getInstance();
+			cal.setTime(begindate);
+			int day = cal.get(Calendar.DATE);  
+			cal.set(Calendar.DATE, day+1);
+			enddate=cal.getTime();
+		}
+		
 		JsonBean json = new JsonBean();
 		try {
 			WritableWorkbook  wwb=Workbook.createWorkbook(new File("D:\\interrupt-histories.xls"));
@@ -152,13 +167,15 @@ public class InterruptHistoryReportController {
 			Label label1=new Label(0, 0, "开关名称");
 			Label label2=new Label(1, 0, "时间");
 			Label label3=new Label(2, 0, "当前状态");
-			Label label4=new Label(3, 0, "操作员");
+			Label label4=new Label(3, 0, "操作员姓名");
 			Label label5=new Label(4, 0, "签字");
 			ws.addCell(label1);
 			ws.addCell(label2);
 			ws.addCell(label3);
 			ws.addCell(label4);
 			ws.addCell(label5);
+		
+					
 			List<InterruptHistoryVo> rows = this.interruptHistoryDao.searchHistories(switchId,operate,operatorName,-1,-1,begindate,enddate);
 			DateFormat df=new DateFormat("yyyy-MM-dd HH:mm:ss");
 			WritableCellFormat wcf=new WritableCellFormat(df);
@@ -241,7 +258,7 @@ public class InterruptHistoryReportController {
 			Label label1=new Label(0, 0, "开关名称");
 			Label label2=new Label(1, 0, "时间");
 			Label label3=new Label(2, 0, "当前状态");
-			Label label4=new Label(3, 0, "操作员");
+			Label label4=new Label(3, 0, "操作员姓名");
 			Label label5=new Label(4, 0, "签字");
 			ws.addCell(label1);
 			ws.addCell(label2);
@@ -330,17 +347,20 @@ public class InterruptHistoryReportController {
 			@RequestParam(value = "operatorName") String operatorName
 			) {
 		
-		SimpleDateFormat sdf =   new SimpleDateFormat( "MM/dd/yyyy" );//01/25/2015
+		
+		operate=oparateAry[Integer.parseInt(operate)];
+
+		SimpleDateFormat sdf =   new SimpleDateFormat( "yyyy-MM-dd" );//01/25/2015
 		 
 			Date enddate=null;
 			Date begindate = null;
 			
 		
 			try {
-				if(beginDate!=null){
+				if(!StringUtils.isBlank(beginDate)){
 					begindate=sdf.parse(beginDate);
 				}
-				if(endDate!=null){
+				if(!StringUtils.isBlank(endDate)){
 					enddate = sdf.parse(endDate);
 				}
 				
@@ -350,14 +370,21 @@ public class InterruptHistoryReportController {
 				e.printStackTrace();
 			}
 			
-		
-		
+			//当开始时间和结束时间一样时
+			if(StringUtils.isNotBlank(beginDate)&&StringUtils.isNotBlank(endDate)&&beginDate.equals(endDate)){
+				Calendar cal=Calendar.getInstance();
+				cal.setTime(begindate);
+				int day = cal.get(Calendar.DATE);  
+				cal.set(Calendar.DATE, day+1);
+				enddate=cal.getTime();
+			}
 		Map<String, Object> map = new HashMap<String, Object>();
 		List<InterruptHistoryVo> rows = this.interruptHistoryDao.searchHistories(switchId,operate,operatorName,pageNo,size,begindate,enddate);
 		map.put("rows", rows);
+		 
 		int total = this.interruptHistoryDao.getHistoryTotal(begindate, enddate,switchId,operate,operatorName);
 		map.put("total", total);
-		System.out.println("总量"+total);
+		//System.out.println("总量"+operate);
 		return map;
 	}
 }

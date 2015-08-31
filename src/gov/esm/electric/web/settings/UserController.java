@@ -12,10 +12,13 @@ import gov.esm.electric.web.circuit.JsonBean;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -62,8 +65,12 @@ public class UserController {
         //设置用户角色
 		UserRoleRelation userRoleRelation = new UserRoleRelation();
 		userRoleRelation.setRoleId(roleId);
-
+		
 		int check = this.checkUser(user, userRoleRelation);
+		
+		if(userServiceImpl.getPassword(name)>0){
+			check=-30;
+		}
 		map.put("check", check);
 		if (check > 0) {
 			userServiceImpl.insert(user, userRoleRelation);
@@ -97,6 +104,8 @@ public class UserController {
 		userRoleRelation.setUserId(user.getId());
 
 		int check = this.checkUser(user, userRoleRelation);
+		
+		
 		map.put("check", check);
 		if (check > 0) {
 			boolean success = userServiceImpl
@@ -156,16 +165,29 @@ public class UserController {
 	 * @return
 	 */
 	private int checkUser(User user, UserRoleRelation userRoleRelation) {
+		Pattern pattern = Pattern.compile("^([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)$");
+		Matcher matcher = pattern.matcher(user.getEmail());
 		if (user == null) {
 			return 0;
-		} else if (StringAssistor.isBlank(user.getName())) {
+		}else if(StringAssistor.isBlank(user.getRealName())){
+			return -1;
+		}
+		else if(StringUtils.isNotBlank(user.getEmail())&&!matcher.matches()){
+			System.out.println("email");
+			return -1;
+		}
+		else if(StringUtils.isNotBlank(user.getPhone())&&!isMobileNO(user.getPhone())){
+			System.out.println("phone");
+			return -1;
+		}
+		else if(!isUserName(user.getName())){
+			System.out.println("username");
+			return -1;
+		}
+		else if (StringAssistor.isBlank(user.getName())) {
 			return -1;
 		} else if (user.getName().length() > 32) {
 			return -10;
-		}  else if (StringAssistor.isBlank(user.getPhone())) {
-			return -3;
-		} else if (user.getPhone().length() > 15) {
-			return -30;
 		} else if (userRoleRelation == null) {
 			return -4;
 		} else if (userRoleRelation.getRoleId() < 1) {
@@ -174,4 +196,16 @@ public class UserController {
 			return 1;
 		}
 	}
+	
+	public static boolean isMobileNO(String mobiles){ 
+        Pattern p = Pattern.compile("^((13[0-9])|(15[^4,\\D])|(18[0,5-9]))\\d{8}$");
+        Matcher m = p.matcher(mobiles);
+        return m.matches();
+    }
+	
+	public static boolean isUserName(String username){ 
+        Pattern p = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]{0,9}$");
+        Matcher m = p.matcher(username);
+        return m.matches();
+    } 
 }

@@ -939,6 +939,7 @@ background:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6
   	background-image: url("../images/button-6.png");
   	height: 26px;
   	width: 79px;
+  	font-weight: bolder;
   }
   .esmButton:hover   {
   	background-image: url("../images/button-7.png")

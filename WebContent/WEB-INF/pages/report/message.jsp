@@ -5,6 +5,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>.datagrid-cell-rownumber{ width:50px; text-align:center; margin:0px; padding:3px 0px; color:#000; } .datagrid-header-rownumber{ width:50px; text-align:center; margin:0px; padding:3px 0px; } </style>
 <script type="text/javascript">
 	Date.prototype.format = function(format) {
 		if (!format) {
@@ -34,6 +35,7 @@
 	};
 	
 	
+if("${flag}"=="1") {
 	//断电报表
 	toolbar = [ {
 		text : '导出今日报表',
@@ -42,8 +44,25 @@
 			
 		}
 	} ];
+	} 
+	else{
+		toolbar = [ ];
+	}
 	
+$(function(){
+	$('#message').datagrid({
+		onClickCell: function (rowIndex, field, value) {
+			//if(rowIndex==1){
+				if(field=="message"){
+					alert(value);
+				}
+				
+			//}
+		    
+		}
+	});
 	
+});
 	
 	
 </script>
@@ -52,15 +71,15 @@
 <body>
 <div style="padding: 10px">
 
-	<table id="histories" class="easyui-datagrid" title="停电通知"
-		style="width: 100%; height: 370px"
+	<table id="message" class="easyui-datagrid" title="停电公告表"
+		style="width: 100%; height: 630px"
 		data-options="toolbar:toolbar,rownumbers:true,singleSelect:true,pagination:true,url:'/message/getMessageTable.do',method:'post'">
 		<thead>
 			<tr>
-				<th data-options="field:'name',align:'center',width:160">操作员</th>
-				<th data-options="field:'message',width:200,align:'center'">停电通知</th>
-				<th data-options="field:'loginTime',width:150,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');}">登录时间</th>
-				<th data-options="field:'logoutTime',width:150,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');}">退出时间</th>
+				<th data-options="field:'name',align:'center',width:160"><b>操作员姓名</b></th>
+				<th data-options="field:'message',width:200,align:'center'"><b>停电通知</b></th>
+				<th data-options="field:'loginTime',width:150,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');}"><b>登录时间</b></th>
+				<th data-options="field:'logoutTime',width:500,align:'center',formatter:function(t){return new Date(t).format('yyyy-MM-dd hh:mm:ss');}"><b>退出时间</b></th>
 		</thead>
 		<tbody>
 			<tr>

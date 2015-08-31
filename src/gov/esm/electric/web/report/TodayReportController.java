@@ -7,10 +7,12 @@
 package gov.esm.electric.web.report;
 
 import gov.esm.electric.dao.InterruptHistoryDao;
+import gov.esm.electric.domain.Role;
 import gov.esm.electric.entity.InterruptHistoryVo;
 import gov.esm.electric.entity.MessageVo;
 import gov.esm.electric.entity.TodayHistoryVo;
 import gov.esm.electric.service.InterruptHistoryService;
+import gov.esm.electric.web.Constant;
 import gov.esm.electric.web.circuit.JsonBean;
 
 import java.io.File;
@@ -59,6 +61,13 @@ public class TodayReportController {
 	 */
 	@RequestMapping(value = "/today-histories.do", method = RequestMethod.GET)
 	public String getTodayHistories(HttpServletRequest req) {
+		List<Role> roles = (List<Role>) req.getSession().getAttribute(Constant.SESSION_KEY_ROLES);
+		if(roles.get(0).getId()==4){
+			req.setAttribute("flag", "0");
+		}
+		else{
+			req.setAttribute("flag", "1");
+		}
 		return "/report/todayHistory";
 	}
 
@@ -83,7 +92,11 @@ public class TodayReportController {
 	public Object temp() {
 		Map<String, Object> map = new HashMap<String, Object>();
 		List<TodayHistoryVo> rows = interruptHistoryService.getToDayHistories();
-		
+		if(rows==null){
+			map.put("total", 0);
+		}else{
+			map.put("total", rows.size());
+		}
 		map.put("rows", rows);
 		return map;
 	}
@@ -98,7 +111,7 @@ public class TodayReportController {
 		try {
 			WritableWorkbook  wwb=Workbook.createWorkbook(new File("D:\\today_report-excel.xls"));
 			WritableSheet ws= wwb.createSheet("student", 0);
-			Label label1=new Label(0, 0, "用户名");
+			Label label1=new Label(0, 0, "操作员姓名");
 			Label label2=new Label(1, 0, "开关/线路");
 			Label label5=new Label(2, 0, "签字");
 			ws.addCell(label1);

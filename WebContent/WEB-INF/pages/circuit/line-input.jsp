@@ -6,18 +6,21 @@
 	</head>
 	<body>
 		<form id="addLineForm" action="">
-			<table>
-				<tr>
-					<td width="120px">线路名:</td>
-					<td><input type="text" id="lineName" value="" class="easyui-validatebox"/></td>
-				</tr>
-				<tr>
-					<td>线路上游开关id:</td>
-					<td>
-						<input type="text" id="upstreamSwitchIds" value="" class="easyui-validatebox" data-options="required:true"/>
-					</td>
-				</tr>
+			<div style="padding: 10px;">
+				<table >
+					<tr height="50px">
+						<td width="150px">线路名称:</td>
+						<td><input type="text" id="lineName" value="" class="textbox" data-options="required:true"/></td>
+					</tr>
+					
+					<tr>
+						<td width="150px">线路上游开关编号:</td>
+						<td>
+							<input type="text" id="upstreamSwitchIds" value="" class="textbox" data-options="required:true"/>
+						</td>
+					</tr>
 			</table>
+			</div>
 		</form>
 	</body>
 </html>

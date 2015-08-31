@@ -18,7 +18,7 @@ $.map(['validatebox','textbox','filebox','searchbox',
 		'datebox','datetimebox','numberbox',
 		'spinner','numberspinner','timespinner','datetimespinner'], function(plugin){
 	if ($.fn[plugin]){
-		$.fn[plugin].defaults.missingMessage = 'This field is required.';
+		$.fn[plugin].defaults.missingMessage = 'This field is required';
 	}
 });
 if ($.fn.validatebox){

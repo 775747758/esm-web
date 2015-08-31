@@ -35,6 +35,7 @@
 	<filter-mapping>
 		<filter-name>AccessFilter</filter-name>
 		<url-pattern>*.do</url-pattern>
+		
 	</filter-mapping>
 	
 	<!-- 权限控制 结束 -->
@@ -51,7 +52,11 @@
 		</init-param>
 		<load-on-startup>3</load-on-startup>
 	</servlet>
-
+	
+	 <listener>
+      <listener-class>gov.esm.electric.listener.ExitSessionListener</listener-class>
+  	</listener>
+  	
 
 	<!-- NOTE: An SSI Filter is also available as an alternative SSI -->
 	<!-- implementation. Use either the Servlet or the Filter but NOT both. -->

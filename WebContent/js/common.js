@@ -23,6 +23,7 @@ esm.common.tab.create = function(name, url) {
 			jQuery('#workArea').tabs('add', {
 				title : name,
 				async : true,
+				cache : false,
 				content : '<div>' + data + '</div>',
 				closable : true
 			});

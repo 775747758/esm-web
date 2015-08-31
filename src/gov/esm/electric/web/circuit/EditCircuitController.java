@@ -4,10 +4,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import gov.esm.electric.service.CableDiagramService;
+import gov.esm.electric.service.CableSwitchService;
 import gov.esm.electric.service.CircuitService;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,6 +75,11 @@ public class EditCircuitController {
 		String switchId = req.getParameter("upstreamSwitchIds");
 		String svg = req.getParameter("svg");
 		Map<String, Object> map = new HashMap<String, Object>();
+		if(StringUtils.isBlank(lineName)||StringUtils.isBlank(switchId)){
+			map.put("message", "您输入的数据为空");
+			map.put("oc", -1);
+			return map;
+		}
 		try{
 			map =  circuitService.addLine(lineName, lineId, parentLineId, switchId, svg, req);
 		} catch (Exception e) {
@@ -93,12 +100,30 @@ public class EditCircuitController {
 		String switchTitle = req.getParameter("switchTitle");
 		String svg = req.getParameter("svg");
 		Map<String, Object> map = new HashMap<String, Object>();
-//		try{
+		try{
 			map =  circuitService.editText(switchId, switchTitle, svg, req);
-//		} catch (Exception e) {
-//			map.put("message", "操作有误，如有问题请联系管理员");
-//			map.put("oc", -1);
-//		}
+		} catch (Exception e) {
+			map.put("message", "操作有误，如有问题请联系管理员");
+			map.put("oc", -1);
+		}
+		return map;
+	}
+	/**
+	 * 修改名称
+	 * @param req
+	 * @return
+	 */
+	@RequestMapping("/doEditText.do")
+	@ResponseBody
+	public Object doEditText(HttpServletRequest req) {
+		String svg = req.getParameter("svg");
+		Map<String, Object> map = new HashMap<String, Object>();
+		try{
+			map =  circuitService.doEditText(svg, req);
+		} catch (Exception e) {
+			map.put("message", "操作有误，如有问题请联系管理员");
+			map.put("oc", -1);
+		}
 		return map;
 	}
 	/**
@@ -119,14 +144,26 @@ public class EditCircuitController {
 		String lineName = req.getParameter("lineName");
 		String parentLineId = req.getParameter("parentLineId");
 		String lastBranchLineId = req.getParameter("lastBranchLineId");
+		String newBranchLineIds = req.getParameter("newBranchLineId");
 		String svg = req.getParameter("svg");
 		Map<String, Object> map = new HashMap<String, Object>();
-//		try{
-			map =  circuitService.addSwitch(switchId, switchName, lastSwitchId, lastBranchSwitchId, nextSwitchId, nextBranchSwitchId, lineId, lineName, parentLineId, lastBranchLineId, svg, req);
-//		} catch (Exception e) {
-//			map.put("message", "操作有误，如有问题请联系管理员");
-//			map.put("oc", -1);
-//		}
+		if(StringUtils.isBlank(switchId)||StringUtils.isBlank(switchName)||StringUtils.isBlank(lastSwitchId)){
+			map.put("message", "开关编号或者开关名字或者上游开关编号为空，请填写！");
+			map.put("oc", -1);
+			return map;
+		}
+		if(cableSwitchService.getCableSwitch(switchId)!=null){
+			map.put("message", "开关编号重复");
+			map.put("oc", -1);
+			return map;
+		}
+		map =  circuitService.addSwitch(switchId, switchName, lastSwitchId, lastBranchSwitchId, nextSwitchId, nextBranchSwitchId, lineId, lineName, parentLineId, lastBranchLineId, svg, req,newBranchLineIds);
+		/*try{
+			
+		} catch (Exception e) {
+			map.put("message", "操作有误，如有问题请联系管理员");
+			map.put("oc", -1);
+		}*/
 		return map;
 	}
 	/**
@@ -140,12 +177,12 @@ public class EditCircuitController {
 		String lineId = req.getParameter("lineId");
 		String svg = req.getParameter("svg");
 		Map<String, Object> map = new HashMap<String, Object>();
-//		try{
+		try{
 			map =  circuitService.deleteLine(lineId, svg, req);
-//		} catch (Exception e) {
-//			map.put("message", "操作有误，如有问题请联系管理员");
-//			map.put("oc", -1);
-//		}
+		} catch (Exception e) {
+			map.put("message", "操作有误，如有问题请联系管理员");
+			map.put("oc", -1);
+		}
 		return map;
 	}
 	/**
@@ -159,12 +196,12 @@ public class EditCircuitController {
 		String switchId = req.getParameter("switchId");
 		String svg = req.getParameter("svg");
 		Map<String, Object> map = new HashMap<String, Object>();
-//		try{
+		try{
 			map =  circuitService.deleteSwitch(switchId, svg, req);
-//		} catch (Exception e) {
-//			map.put("message", "操作有误，如有问题请联系管理员");
-//			map.put("oc", -1);
-//		}
+		} catch (Exception e) {
+			map.put("message", "操作有误，如有问题请联系管理员");
+			map.put("oc", -1);
+		}
 		return map;
 	}
 	
@@ -172,4 +209,8 @@ public class EditCircuitController {
 	private CableDiagramService cableDiagramService;
 	@Autowired
 	private CircuitService circuitService;
+	
+	@Autowired
+	private CableSwitchService cableSwitchService;
+	
 }

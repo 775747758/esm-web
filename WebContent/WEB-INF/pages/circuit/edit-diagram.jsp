@@ -14,62 +14,59 @@
 		<script type="text/javascript" src="/js/index.js"></script>
 		<script type="text/javascript" src="/js/common.js"></script>
 		<script type="text/javascript">
+		
+			var isNewBranchLineIdOnFocus=true;
+			var checkSubmitFlag = true;
+		
 			function addLine(line){
 				var paper = Snap("#cableDiagram");
 				$('#addLineDialog').dialog({
 					title: '线路基本信息',
-				    width: 600,
-				    height: 300,
+				    width: 370,
+				    height: 200,
+				    closed: false,
 				    cache: false,
 				    href:"/circuit/lineInput.do",
 				    buttons:[{
 						text:'保存',
 						handler:function(){
 							if($('#addLineForm').form('validate')){
-								//发送ajax请求，把用户填写的数据提交到服务器端
-				  				var myDate = new Date();
-								var myTime = myDate.getTime();
-				  				var lineId = "line-" + myTime;
-				  				line.attr({
-				  					id:lineId,
-				  					title:$('#lineName').val(),
-				  					stroke: "#FF0000"
-				  				});
-				  				
-				  				//var x = (parseFloat(line.attr("x1"))+parseFloat(line.attr("x2")))/2;
-				  				//var y = (parseFloat(line.attr("y1"))+parseFloat(line.attr("y2")))/2;
-				  				
-				  				//text = paper.paper.text(x+10, y+10, $('#lineName').val());
-				  				//text.attr("stroke-width", "0.25");
-				  				//text.attr("stroke", "#FF0000");
-				  				//text.attr("fill", "#FF0000");
-				  				//text.attr("font-size", "8");
-				  				//text.attr("font-family", "宋体");
-				  				//text.attr("baseline-shift", "baseline");
-				  				//text.attr("xml:space", "preserve");
-				  				
-								var postData = {
-									lineId : myTime,
-									lineName : $('#lineName').val(),
-									parentLineId : "",
-									upstreamSwitchIds : $('#upstreamSwitchIds').val(),
-									svg : $('#cableDiagram').html()
-								}
-								$.ajax({
-									url:'/circuit/addLineForm.do',
-							  		type:'post',
-							  		data:postData,
-							  		success:function(data){
-							  			if(data.oc > 0){
-							  				$.messager.alert('系统提示',data.message);
-										}else if(data.oc<0){
-											$.messager.alert('系统提示',data.message,'error');
-										}
-							  			//提示一下用户
-							  			$('#addLineDialog').dialog('close');
-							  			location.reload();
+								if(checkSubmitFlag){
+									checkSubmitFlag = false;
+									//发送ajax请求，把用户填写的数据提交到服务器端
+					  				var myDate = new Date();
+									var myTime = myDate.getTime();
+					  				var lineId = "line-" + myTime;
+					  				line.attr({
+					  					id:lineId,
+					  					title:$('#lineName').val(),
+					  					stroke: "#FF0000"
+					  				});
+									var postData = {
+										lineId : myTime,
+										lineName : $('#lineName').val(),
+										parentLineId : "",
+										upstreamSwitchIds : $('#upstreamSwitchIds').val(),
+										svg : $('#cableDiagram').html()
 									}
-								});
+									$.ajax({
+										url:'/circuit/addLineForm.do',
+								  		type:'post',
+								  		data:postData,
+								  		success:function(data){
+								  			if(data.oc > 0){
+								  				alert(data.message);
+								  				$('#addLineDialog').dialog('close');
+								  				location.reload();
+											}else if(data.oc<0){
+												$.messager.alert('系统提示',data.message,'error');
+											}
+								  			//提示一下用户
+								  			checkSubmitFlag = true;
+								  			
+										}
+									});
+								}
 							}
 						}
 					},{
@@ -82,67 +79,96 @@
 				});
 			};
 			function addSwitch(line1, line2, lineName, switchImg, line3){
+				
+				$("#lastBranchLineId").click(function(){
+					alert("lastBranchLineId");
+					isNewBranchLineIdOnFocus=false;
+				});
+				$("#newBranchLineId").click(function(){
+					alert("newBranchLineId");
+					isNewBranchLineIdOnFocus=true;
+				});
+				
 				var paper = Snap("#cableDiagram");
 				$("line").each(function(i){
-			        $(this).attr("onclick", "lastBranchLineId(this);");
+					$(this).attr("onclick", "lastBranchLineId(this);");					
 				});
 				$('#addSwitchDialog').dialog({
+					
 					title: '开关基本信息',
-				    width: 600,
+				    width: 540,
 				    height: 300,
+				    closed: false,
 				    cache: false,
 				    href:"/circuit/switchInput.do",
+				    onLoad:function() {
+				    	$("#lastBranchLineId").click(function(){
+							isNewBranchLineIdOnFocus=false;
+						});
+						$("#newBranchLineId").click(function(){
+							isNewBranchLineIdOnFocus=true;
+						});
+			        },
 				    buttons:[{
 						text:'保存',
 						handler:function(){
 							if($('#addSwitchForm').form('validate')){
-				  				line3.remove();
-								$("line").each(function(i){
-							        $(this).removeAttr("onclick");
-							        $(this).removeAttr("onmouseover");
-							        $(this).removeAttr("onmouseout");
-								});
-								switchImg.attr({
-				  					id:"switch-" + $('#switchId').val()
-				  				});
-								$('#snap').html($('#switchName').val());
-								$('#snap').attr("stroke-width", "0.25");
-								$('#snap').attr("stroke", "#FF0000");
-								$('#snap').attr("fill", "#FF0000");
-								$('#snap').attr("font-size", "8");
-								$('#snap').attr("font-family", "宋体");
-								$('#snap').attr("baseline-shift", "baseline");
-								$('#snap').attr("xml:space", "preserve");
-								$('#snap').removeAttr("id");
-								//发送ajax请求，把用户填写的数据提交到服务器端
-								var postData = {
-									switchId : $('#switchId').val(),
-									switchName : $('#switchName').val(),
-									lastSwitchId : $('#lastSwitchId').val(),
-									lastBranchSwitchId : $('#lastBranchSwitchId').val(),
-									lastBranchLineId : $('#lastBranchLineId').val(),
-									nextSwitchId : $('#nextSwitchId').val(),
-									nextBranchSwitchId : $('#nextBranchSwitchId').val(),
-									lineId : line2.attr("id"),
-									lineName : lineName,
-									parentLineId : $(line3).attr("id"),
-									svg : $('#cableDiagram').html()
-								}
-								$.ajax({
-									url:'/circuit/addSwitch.do',
-							  		type:'post',
-							  		data:postData,
-							  		success:function(data){
-							  			if(data.oc > 0){
-							  				$.messager.alert('系统提示',data.message);
-										}else if(data.oc<0){
-											$.messager.alert('系统提示',data.message,'error');
-										}
-							  			//提示一下用户
-							  			$('#addSwitchDialog').dialog('close');
-							  			location.reload();
+								if(checkSubmitFlag){
+									checkSubmitFlag = false;
+					  				line3.remove();
+									$("line").each(function(i){
+								        $(this).removeAttr("onclick");
+								        $(this).removeAttr("onmouseover");
+								        $(this).removeAttr("onmouseout");
+									});
+									switchImg.attr({
+					  					id:"switch-" + $('#switchId').val(),
+					  					title:"开关" + $('#switchName').val()
+					  				});
+									$('#snap').html($('#switchName').val());
+									$('#snap').attr("stroke-width", "0.25");
+									$('#snap').attr("stroke", "#FF0000");
+									$('#snap').attr("fill", "#FF0000");
+									$('#snap').attr("font-size", "8");
+									$('#snap').attr("font-family", "宋体");
+									$('#snap').attr("baseline-shift", "baseline");
+									$('#snap').attr("xml:space", "preserve");
+									$('#snap').removeAttr("id");
+									//发送ajax请求，把用户填写的数据提交到服务器端
+									var postData = {
+										switchId : $('#switchId').val(),
+										switchName : "开关" + $('#switchName').val(),
+										lastSwitchId : $('#lastSwitchId').val(),
+										lastBranchSwitchId : $('#lastBranchSwitchId').val(),
+										lastBranchLineId : $('#lastBranchLineId').val(),
+										newBranchLineId : $('#newBranchLineId').val(),
+										nextSwitchId : $('#nextSwitchId').val(),
+										nextBranchSwitchId : $('#nextBranchSwitchId').val(),
+										lineId : line2.attr("id"),
+										lineName : lineName,
+										parentLineId : $(line3).attr("id"),
+										svg : $('#cableDiagram').html()
 									}
-								});
+									$.ajax({
+										url:'/circuit/addSwitch.do',
+								  		type:'post',
+								  		data:postData,
+								  		success:function(data){
+								  			if(data.oc > 0){
+								  				alert(data.message);
+								  				$('#addSwitchDialog').dialog('close');
+								  				location.reload();
+											}else if(data.oc<0){
+												$.messager.alert('系统提示',data.message,'error',function(){
+													location.reload();
+												});
+											}
+								  			//提示一下用户
+								  			checkSubmitFlag = true;
+								  			
+										}
+									});
+								}
 							}
 						}
 					},{
@@ -164,21 +190,22 @@
 					var title = $(this).attr("title");
 					var text = "开关"+$(obj).text().trim();
 					if(title==text) {
-
 						button = this;
 					}
 				});
-				if(button!=null) {
-					$('#editTextDialog').dialog({
-						title: '标签基本信息',
-					    width: 600,
-					    height: 300,
-					    cache: false,
-					    href:"/circuit/textInput.do?elementText="+$(obj).text(),
-					    buttons:[{
-							text:'保存',
-							handler:function(){
-								//发送ajax请求，把用户填写的数据提交到服务器端
+				$('#editTextDialog').dialog({
+					title: '标签基本信息',
+				    width: 300,
+				    height: 150,
+				    closed: false,
+				    cache: false,
+				    href:"/circuit/textInput.do?elementText="+$(obj).text(),
+				    buttons:[{
+						text:'保存',
+						handler:function(){
+							//发送ajax请求，把用户填写的数据提交到服务器端
+							if(checkSubmitFlag){
+								checkSubmitFlag = false;
 								$("line").each(function(i){
 							        $(this).removeAttr("onclick");
 								});
@@ -190,36 +217,62 @@
 								});
 								$(obj).html($('#elementText').val());
 								
-								$(button).attr("title", "开关" + $('#elementText').val());
-								var postData = {
-									switchId : $(button).attr("id"),
-									switchTitle : "开关" + $('#elementText').val().trim(),
-									svg : $('#cableDiagram').html()
-								};
-								$.ajax({
-									url:'/circuit/editText.do',
-							  		type:'post',
-							  		data:postData,
-							  		success:function(data){
-							  			if(data.oc > 0){
-							  				$.messager.alert('系统提示',data.message);
-										}else if(data.oc<0){
-											$.messager.alert('系统提示',data.message,'error');
+								if(button!=null) {
+									$(button).attr("title", "开关" + $('#elementText').val());
+									var postData = {
+										switchId : $(button).attr("id"),
+										switchTitle : "开关" + $('#elementText').val().trim(),
+										svg : $('#cableDiagram').html()
+									};
+									$.ajax({
+										url:'/circuit/editText.do',
+								  		type:'post',
+								  		data:postData,
+								  		success:function(data){
+								  			if(data.oc > 0){
+								  				alert(data.message);
+								  				$('#editTextDialog').dialog('close');
+								  				location.reload();
+											}else if(data.oc<0){
+												$.messager.alert('系统提示',data.message,'error');
+											}
+								  			//提示一下用户
+								  			checkSubmitFlag = true;
+								  			
 										}
-							  			//提示一下用户
-							  			$('#editTextDialog').dialog('close');
-							  			location.reload();
-									}
-								});
+									});
+								} else {
+									var postData = {
+										svg : $('#cableDiagram').html()
+									};
+									$.ajax({
+										url:'/circuit/doEditText.do',
+								  		type:'post',
+								  		data:postData,
+								  		success:function(data){
+								  			if(data.oc > 0){
+								  				alert(data.message);
+								  				$('#editTextDialog').dialog('close');
+								  				location.reload();
+											}else if(data.oc<0){
+												$.messager.alert('系统提示',data.message,'error');
+											}
+								  			//提示一下用户
+								  			
+								  			checkSubmitFlag = true;
+								  			
+										}
+									});
+								}
 							}
-						},{
-							text:'取消',
-							handler:function(){
-								$('#editTextDialog').dialog('close');
-							}
-						}]
-					});
-				}
+						}
+					},{
+						text:'取消',
+						handler:function(){
+							$('#editTextDialog').dialog('close');
+						}
+					}]
+				});
 			};
 			function deleteLine(lineId) {
 				$('#'+lineId).remove();
@@ -233,16 +286,17 @@
 			  		data:postData,
 			  		success:function(data){
 			  			if(data.oc > 0){
-			  				$.messager.alert('系统提示',data.message);
+			  				alert(data.message);
+			  				location.reload();
 						}else if(data.oc<0){
 							$.messager.alert('系统提示',data.message,'error');
 						}
-			  			location.reload();
+			  			
 					}
 				});
 			};
 			function deleteSwitch(switchId) {
- 				$('#'+switchId).remove();
+				$('#'+switchId).remove();
 				var title = switchId.substring(7,switchId.length)
  				$("text").each(function(){
 					var text = $(this).text().trim();
@@ -260,23 +314,36 @@
 			  		data:postData,
 			  		success:function(data){
 			  			if(data.oc > 0){
-			  				$.messager.alert('系统提示',data.message);
+			  				alert(data.message);
+			  				location.reload();
 						}else if(data.oc<0){
 							$.messager.alert('系统提示',data.message,'error');
 						}
-			  			location.reload();
+			  			
 					}
 				});
+ 				
 			};
 			function lastBranchLineId(obj) {
-				var id = $(obj).attr("id");
-				var lineId = id.substring(id.indexOf("-")+1, id.length);
-				if($('#lastBranchLineId').val().trim()=="") {
-					$('#lastBranchLineId').attr("value", lineId);
-				} else {
-					$('#lastBranchLineId').attr("value", $('#lastBranchLineId').val()+","+lineId);
+				if(isNewBranchLineIdOnFocus){
+					var id = $(obj).attr("id");
+					var lineId = id.substring(id.indexOf("-")+1, id.length);
+					if($('#newBranchLineId').val().trim()=="") {
+						$('#newBranchLineId').attr("value", lineId);
+					} else {
+						$('#newBranchLineId').attr("value", $('#newBranchLineId').val()+","+lineId);
+					}
+				}else{
+					var id = $(obj).attr("id");
+					var lineId = id.substring(id.indexOf("-")+1, id.length);
+					if($('#lastBranchLineId').val().trim()=="") {
+						$('#lastBranchLineId').attr("value", lineId);
+					} else {
+						$('#lastBranchLineId').attr("value", $('#lastBranchLineId').val()+","+lineId);
+					}
 				}
-			} 
+				
+			};
 			$(function() {
 				esm.circuit.initialize();
 				$("svg").width($("svg").width() * 1.5).height($("svg").height() * 1.5);
@@ -284,8 +351,22 @@
 		</script>
 	</head>
 	<body>
+	
+	
+	
+	
+
+
+
+	
+	
+	
+	
+	
+	
+	
 		<input id="selected" type="hidden" lineId="" switchId="" textObj="" />
-		<div id="toobar" style="overflow: hidden; position: relative; top: 0px; left: 0px;">
+		<div id="toobar" style="position:fixed;">
 			<input id="drawLine" class="esmButton" type="button" value="添加线路" onclick="javascript:esm.circuit.editLine();" />
 			<input id="addButton" class="esmButton" type="button" value="添加开关" onclick="javascript:esm.circuit.editSwitch();" />
 			<input id="deleteElement" class="esmButton" type="button" value="删除" onclick="javascript:esm.circuit.deleteElement();" />

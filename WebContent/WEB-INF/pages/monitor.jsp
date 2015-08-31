@@ -5,7 +5,7 @@
 
 <div id="outContainer">
 	<div id="content"></div>
-	<a style="overflow: hidden; position: relative; top: 6px; left: 0px;"
+	<a style="overflow: hidden; position: relative; top: 25px; left: 0px;"
 		id="removeMessageBt" onclick="removeMsg()" class="easyui-linkbutton">关闭通知</a>
 </div>
 
@@ -14,15 +14,14 @@
 </head>
 <body>
 
-	<div id="container"
-		style="background: #000; overflow: hidden; position: relative; left: 0px; top: 0px;">
-	<svg width="1599" height="899" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" style="background-color:black" stroke="#00FF00">
+	<div id = "container" style="background: #000; overflow: hidden; position: relative; left: 0px; top: 0px;">
+	<svg  viewBox="0 0 2000 1000"  id = "cableDiagram" width="2000" height="1000" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" style="background-color:black" stroke="#00FF00">
 		${cableDiagram.html}
 	</svg>
 
 	</div>
 
-	<img id="warnning" src="/images/warnning_normal.png" width="30" />
+	<img id="warnning" src="/images/warnning_normal.png" width="50px" />
 	<img src="/images/fullscreen.png" width='40px' height='40px'
 		style="position: absolute; right: 0px; top: 0px;"
 		onclick="fullScreen()"></img>
@@ -39,7 +38,7 @@
 <link type="text/css" rel="stylesheet" href="style/main.css" />
 <style type="text/css">
 .fontstyle {
-	font-family: "微软雅黑" font-size : 40px;
+	font-family: "微软雅黑" font-size : 70px;
 	font-weight: 100
 }
 
@@ -62,20 +61,24 @@
 	width: 400px;
 	margin-right: auto;
 	margin-left: auto;
+	
 }
 
 #outContainer {
 	background: #CCCCCC;
 	position: relative;
-	overflow: hidden; /*这个东西折腾了很久才弄出来*/
-	width: 800px;
-	height: 40px;
+	overflow: hidden; 
+	width: 1200px;
+	height: 80px;
 	line-height: 40px;
 	margin-right: auto;
 	margin-left: auto;
+	
 }
 
 #content {
+margin-top:20px;
+	font-size:40px;
 	position: absolute;
 	left: 0;
 	top: 0;
@@ -140,6 +143,7 @@
 	var message = "";
 	var isBegin = false;
 	var isLight = false;
+	var isNotice=false;
 	/* 	var a = new Array("2119", "2150", "2201", "2207", "2208", "2210", "2211",
 	 "2212", "2213", "2215", "2216", "2221", "2223", "2226", "2230",
 	 "2234", "2238", "2240", "2245", "2248", "2260", "2265", "2282",
@@ -179,9 +183,12 @@
 	
 	
 	//控制音频
-	var audioElement = document.createElement('audio');  
+	var audioElement = document.createElement('AUDIO');  
 	audioElement.setAttribute('src', '/audio/火警警报声.wav');
 	audioElement.setAttribute('loop', 'loop');
+	
+	//document.body.appendChild(x);
+	
 	function PlayAudio()  
 	{  
 	    audioElement.load;  
@@ -200,6 +207,7 @@
 			if (result.success) {
 				//alert(result.success);
 				if (!isBegin) {
+					isNotice=false;
 					$("#content").html("线路一切正常！！");
 				}
 
@@ -220,6 +228,7 @@
 						});
 					} else {
 						if (message != "" && message != null) {
+							isNotice=true;
 							$("#content").html("通知:" + message);
 						}
 
@@ -253,7 +262,8 @@
 			url : '/circuit/getAllLinesAndSwitchs.do',
 			type : 'get',
 			success : function(map) {
-
+				var cableDiagram = map.cableDiagram;
+				$("#cableDiagram").html(cableDiagram);
 				//显示所有开关
 				var switchs = map.switchs;
 				for (var i = 0; i < switchs.length; i++) {
@@ -307,7 +317,11 @@
 						PlayAudio();
 					}
 				}else{
-					$("#content").html("线路一切正常！！");
+					
+					if(!isNotice){
+						$("#content").html("线路一切正常！！");
+					}
+					
 					if (isBegin) {
 						//$("#mar").html("<STRONG>"+"线路一切正常！！");
 						//$("#outContainer").html("线路一切正常！！");
@@ -316,7 +330,10 @@
 								speed : 2
 							});
 						} else {
-							$("#content").html("线路一切正常！！");
+							
+							if(!isNotice){
+								$("#content").html("线路一切正常！！");
+							}
 						}
 
 						stopWarn();
@@ -344,8 +361,8 @@
 									Color.RESERVE);
 						}
 					}
-				}
-
+				};
+				
 			}
 		});
 		

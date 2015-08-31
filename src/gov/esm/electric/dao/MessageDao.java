@@ -70,11 +70,12 @@ public class MessageDao {
 			+ "where user.id=user_log.userId "
 			+ "and user.id=message.userId "
 			+ "and message.time>user_log.loginTime "
-			+ "and message.time<user_log.logoutTime";
+			+ "and message.time<user_log.logoutTime ";
 
 	public List<MessageVo> getMessage(int index, int size) {
 		StringBuilder sql = new StringBuilder(128);
 		sql.append(sql_messages);
+		sql.append(" order by id desc");
 		sql.append(" limit ").append((index - 1) * size).append(",").append(size);
 		return this.jdbcTemplate.query(sql.toString(), rowMapperMessageVo);
 	}
@@ -84,9 +85,10 @@ public class MessageDao {
 	    Date today=cal.getTime();
 		StringBuilder sql = new StringBuilder(128);
 		sql.append(sql_messages);
-		sql.append(" and loginTime>=").append("'").append(formaterDate.format(today)+" 08:00:00").append("'")
+		sql.append(" and loginTime>=").append("'").append(formaterDate.format(today)+" 00:00:00").append("'")
 		.append(" and ").append("logoutTime<=").append("'")
-		.append(formaterDate.format(new Date())+" 18:00:00").append("'");
+		.append(formaterDate.format(new Date())+" 24:00:00").append("'");
+		sql.append(" order by id desc");
 		return this.jdbcTemplate.query(sql.toString(), rowMapperMessageVo);
 	}
 	

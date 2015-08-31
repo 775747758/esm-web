@@ -1,6 +1,6 @@
 package gov.esm.electric.service;
 
-import gov.esm.assistor.ListUtils;
+import gov.esm.assistor.DataSource;
 import gov.esm.electric.cache.SwitchCache;
 import gov.esm.electric.dao.CableSwitchDao;
 import gov.esm.electric.dao.StationSwitchStreamDao;
@@ -10,9 +10,7 @@ import gov.esm.electric.domain.CableSwitch;
 import gov.esm.electric.domain.SwitchDownStream;
 import gov.esm.electric.domain.SwitchStream;
 import gov.esm.electric.domain.SwitchUpStream;
-import gov.esm.assistor.DataSource;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -173,5 +171,9 @@ public class CableSwitchService {
 		CableSwitch cableSwitch = cableSwitchDao.getCableSwitch(switchId);
 		cableSwitch.setName(switchTitle);
 		cableSwitchDao.update(cableSwitch);
+	}
+	
+	public void deleteWithId(String id) {
+		cableSwitchDao.deleteWithId(id);
 	}
 }

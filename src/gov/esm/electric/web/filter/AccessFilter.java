@@ -40,7 +40,19 @@ public class AccessFilter implements Filter {
 		
 		
 		HttpServletRequest request = (HttpServletRequest) req;
+		String path = request.getServletPath();
 		HttpSession session = request.getSession();
+		
+		if("/monitor.do".equals(path))
+		{
+			request.getRequestDispatcher("/monitor.do").forward(req, resp);
+			return;
+		}
+		if("/circuit/getMessage.do".equals(path)||"/circuit/getAllLinesAndSwitchs.do".equals(path)||"/circuit/removeMessage.do".equals(path)){
+			chain.doFilter(req, resp);
+			return;
+		}
+		
 		if (session != null) {
 			User user = (User) session.getAttribute("user");
 			if (user == null) {
@@ -54,19 +66,7 @@ public class AccessFilter implements Filter {
 					request.getRequestDispatcher("/login.do")
 							.forward(req, resp);
 				} else {
-					String path = request.getServletPath();
 					logger.info("context path is :" + path);
-					
-					if(!"/monitor.do".equals(path))
-					{
-						boolean havePermission = this.hasPermission(path,
-								permissions);
-						if (!havePermission) {
-							logger.info("you not have permission :" + path);
-							request.getRequestDispatcher("/login.do").forward(req,
-									resp);
-						}
-					}
 					
 				}
 			}

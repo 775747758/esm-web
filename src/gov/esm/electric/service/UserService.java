@@ -80,7 +80,9 @@ public class UserService {
 		return userDao.getUserTotal();
 	}
 	
-	
+	public Integer getPassword(String username) {
+		return userDao.getPassword(username);
+	}
 
 	/**
 	 * 获得用户表的所有状态

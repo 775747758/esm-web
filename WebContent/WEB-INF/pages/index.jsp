@@ -21,12 +21,12 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 <script type="text/javascript" src="/js/common.js"></script>
 <script type="text/javascript" src="/js/access-control.js"></script>
 <script type="text/javascript" src="/js/jquery.md5.js"></script>
+<script type="text/javascript" src="/js/easyui-lang-zh_CN.js"></script> 
+
 <script type="text/javascript">
 
 <!--关闭浏览器 -->
-window.onbeforeunload = function () {
-	 return ('您确定要离开此页面吗?');
-};
+
 	window.onload = function() {
 		//初始化功能菜单
 		esm.index.menu.init();
@@ -107,14 +107,14 @@ window.onbeforeunload = function () {
 	<!-- 头部结束 -->
 
 	<!-- 左侧功能菜单 开始 -->
-	<div id="zuoce" data-options="region:'west',split:true,title:'功能菜单'," style="width:20%; padding: 10px;" >
+	<div id="zuoce" data-options="region:'west',split:true,title:'功 能 菜 单'," style="width:20%; padding: 10px;" >
 		<ul id="tt" class="easyui-tree" data-options="animate:true,lines:false" style="padding-left: 20%;padding-top: 10px"></ul>
 	</div>
 	<!-- 　左侧功能菜单 结束 -->
 
 	<!-- 工作区 开始 -->
 	<div id="youce" data-options="region:'center',title:''">
-		<div id="workArea" class="easyui-tabs" data-options="split:true,border:false" style="height: 730px;width: 1459.2px;" >
+		<div id="workArea" class="easyui-tabs" data-options="split:true,border:false" style="height: 730px;width: 95%;" >
 			<div title="系统说明" data-options="iconCls:'icon-help',closable:true" style="padding: 20px;">
 				<p style="font-size: 20px">系功功能说明.</p>
 				<ul style="font-size: 18px">
